@@ -2,6 +2,7 @@ package com.example.uni_manage.controller;
 
 import com.example.uni_manage.model.Resource;
 import com.example.uni_manage.service.ResourceService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class ResourceController {
 
     // POST /api/resources
     @PostMapping
-    public ResponseEntity<Resource> createResource(@RequestBody Resource resource) {
+    public ResponseEntity<Resource> createResource(@Valid @RequestBody Resource resource) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(resourceService.createResource(resource));
     }
@@ -38,7 +39,7 @@ public class ResourceController {
     @PutMapping("/{id}")
     public ResponseEntity<Resource> updateResource(
             @PathVariable String id,
-            @RequestBody Resource resource) {
+            @Valid @RequestBody Resource resource) {
         return ResponseEntity.ok(resourceService.updateResource(id, resource));
     }
 
@@ -54,10 +55,8 @@ public class ResourceController {
     public ResponseEntity<List<Resource>> filterResources(
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) String status) {
-        if (type != null) return ResponseEntity.ok(resourceService.getResourcesByType(type));
-        if (location != null) return ResponseEntity.ok(resourceService.getResourcesByLocation(location));
-        if (status != null) return ResponseEntity.ok(resourceService.getResourcesByStatus(status));
-        return ResponseEntity.ok(resourceService.getAllResources());
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer minCapacity) {
+        return ResponseEntity.ok(resourceService.filterResources(type, location, status, minCapacity));
     }
 }
