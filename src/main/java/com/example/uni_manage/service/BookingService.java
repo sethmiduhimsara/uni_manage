@@ -8,6 +8,7 @@ import com.example.uni_manage.exception.ForbiddenOperationException;
 import com.example.uni_manage.exception.ResourceNotFoundException;
 import com.example.uni_manage.model.Booking;
 import com.example.uni_manage.model.BookingStatus;
+import com.example.uni_manage.model.NotificationType;
 import com.example.uni_manage.repository.BookingRepository;
 import com.example.uni_manage.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final ResourceRepository resourceRepository;
+    private final NotificationService notificationService;
 
     public Booking createBooking(BookingRequest request, String userEmail) {
         validateTimeRange(request.startTime(), request.endTime());
@@ -96,7 +98,15 @@ public class BookingService {
         booking.setStatus(BookingStatus.APPROVED);
         booking.setAdminDecisionReason(reason);
         booking.setUpdatedAt(Instant.now());
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        notificationService.createNotification(
+                booking.getUserEmail(),
+                NotificationType.BOOKING_APPROVED,
+                "Booking approved",
+                "Your booking has been approved.",
+                booking.getId()
+        );
+        return saved;
     }
 
     public Booking rejectBooking(String id, String reason) {
@@ -108,7 +118,15 @@ public class BookingService {
         booking.setStatus(BookingStatus.REJECTED);
         booking.setAdminDecisionReason(reason);
         booking.setUpdatedAt(Instant.now());
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        notificationService.createNotification(
+                booking.getUserEmail(),
+                NotificationType.BOOKING_REJECTED,
+                "Booking rejected",
+                "Your booking was rejected. Reason: " + reason,
+                booking.getId()
+        );
+        return saved;
     }
 
     public Booking cancelBooking(String id, String requesterEmail, boolean isAdmin) {
@@ -121,7 +139,15 @@ public class BookingService {
         }
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setUpdatedAt(Instant.now());
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        notificationService.createNotification(
+                booking.getUserEmail(),
+                NotificationType.BOOKING_CANCELLED,
+                "Booking cancelled",
+                "Your booking has been cancelled.",
+                booking.getId()
+        );
+        return saved;
     }
 
     private Booking getBooking(String id) {

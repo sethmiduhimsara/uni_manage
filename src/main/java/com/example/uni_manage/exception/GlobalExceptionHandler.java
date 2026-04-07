@@ -47,6 +47,14 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
     }
 
+    @ExceptionHandler(NotificationNotFoundException.class)
+    public ResponseEntity<ApiError> handleNotificationNotFound(
+            NotificationNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
+    }
+
     @ExceptionHandler(FileStorageException.class)
     public ResponseEntity<ApiError> handleFileStorage(
             FileStorageException ex,

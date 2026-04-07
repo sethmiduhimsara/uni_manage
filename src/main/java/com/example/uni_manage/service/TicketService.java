@@ -15,6 +15,7 @@ import com.example.uni_manage.model.TicketAttachment;
 import com.example.uni_manage.model.TicketComment;
 import com.example.uni_manage.model.TicketPriority;
 import com.example.uni_manage.model.TicketStatus;
+import com.example.uni_manage.model.NotificationType;
 import com.example.uni_manage.repository.ResourceRepository;
 import com.example.uni_manage.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,7 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final ResourceRepository resourceRepository;
     private final AppStorageProperties storageProperties;
+    private final NotificationService notificationService;
 
     public Ticket createTicket(TicketCreateRequest request, List<MultipartFile> files, String userEmail) {
         validateLocationOrResource(request);
@@ -155,7 +157,17 @@ public class TicketService {
             ticket.setResolutionNotes(request.resolutionNotes());
         }
         ticket.setUpdatedAt(Instant.now());
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        if (saved.getCreatedByEmail() != null) {
+            notificationService.createNotification(
+                    saved.getCreatedByEmail(),
+                    NotificationType.TICKET_STATUS_CHANGED,
+                    "Ticket status updated",
+                    "Ticket status changed to " + saved.getStatus(),
+                    saved.getId()
+            );
+        }
+        return saved;
     }
 
     public Ticket addComment(String id, TicketCommentRequest request, String authorEmail) {
@@ -171,7 +183,19 @@ public class TicketService {
         comments.add(comment);
         ticket.setComments(comments);
         ticket.setUpdatedAt(Instant.now());
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        if (saved.getCreatedByEmail() != null
+            && authorEmail != null
+            && !saved.getCreatedByEmail().equalsIgnoreCase(authorEmail)) {
+            notificationService.createNotification(
+                saved.getCreatedByEmail(),
+                NotificationType.TICKET_COMMENT,
+                "New comment on ticket",
+                "A new comment was added to your ticket.",
+                saved.getId()
+            );
+        }
+        return saved;
     }
 
     public Ticket updateComment(String ticketId, String commentId, TicketCommentRequest request, String requesterEmail, boolean isAdmin) {
