@@ -21,37 +21,53 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
         return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
-        }
+    }
 
-        @ExceptionHandler(BookingNotFoundException.class)
-        public ResponseEntity<ApiError> handleBookingNotFound(
+    @ExceptionHandler(BookingNotFoundException.class)
+    public ResponseEntity<ApiError> handleBookingNotFound(
             BookingNotFoundException ex,
             HttpServletRequest request
-        ) {
+    ) {
         return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
-        }
+    }
 
-        @ExceptionHandler(BookingConflictException.class)
-        public ResponseEntity<ApiError> handleBookingConflict(
+    @ExceptionHandler(BookingConflictException.class)
+    public ResponseEntity<ApiError> handleBookingConflict(
             BookingConflictException ex,
             HttpServletRequest request
-        ) {
+    ) {
         return buildError(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI(), null);
-        }
+    }
 
-        @ExceptionHandler(BadRequestException.class)
-        public ResponseEntity<ApiError> handleBadRequest(
+    @ExceptionHandler(TicketNotFoundException.class)
+    public ResponseEntity<ApiError> handleTicketNotFound(
+            TicketNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
+    }
+
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<ApiError> handleFileStorage(
+            FileStorageException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getRequestURI(), null);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> handleBadRequest(
             BadRequestException ex,
             HttpServletRequest request
-        ) {
+    ) {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), null);
-        }
+    }
 
-        @ExceptionHandler(ForbiddenOperationException.class)
-        public ResponseEntity<ApiError> handleForbidden(
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<ApiError> handleForbidden(
             ForbiddenOperationException ex,
             HttpServletRequest request
-        ) {
+    ) {
         return buildError(HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI(), null);
     }
 
@@ -66,21 +82,21 @@ public class GlobalExceptionHandler {
         }
 
         return buildError(HttpStatus.BAD_REQUEST, "Validation failed", request.getRequestURI(), fieldErrors);
-        }
+    }
 
-        private ResponseEntity<ApiError> buildError(
+    private ResponseEntity<ApiError> buildError(
             HttpStatus status,
             String message,
             String path,
             Map<String, String> fieldErrors
-        ) {
+    ) {
         ApiError error = new ApiError(
-            Instant.now(),
-            status.value(),
-            status.getReasonPhrase(),
-            message,
-            path,
-            fieldErrors
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                message,
+                path,
+                fieldErrors
         );
         return ResponseEntity.status(status).body(error);
     }
