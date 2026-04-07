@@ -7,7 +7,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
@@ -57,7 +61,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/resources/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
-            .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService())))
+            .oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(oAuth2UserService())
+                    .oidcUserService(oidcUserService())
+                )
+                .defaultSuccessUrl("http://localhost:5173", true)
+            )
             .logout(logout -> logout.logoutSuccessHandler((request, response, authentication) -> {
                 response.setStatus(200);
             }));
@@ -78,6 +88,26 @@ public class SecurityConfig {
             return new DefaultOAuth2User(
                     roles.stream().map(org.springframework.security.core.authority.SimpleGrantedAuthority::new).toList(),
                     user.getAttributes(),
+                    "email"
+            );
+        };
+    }
+
+    @Bean
+    public OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
+        OidcUserService delegate = new OidcUserService();
+        return userRequest -> {
+            OidcUser user = delegate.loadUser(userRequest);
+            String email = user.getEmail();
+            Set<String> roles = new HashSet<>();
+            roles.add("ROLE_USER");
+            if (email != null && securityProperties.adminEmails().contains(email)) {
+                roles.add("ROLE_ADMIN");
+            }
+            return new DefaultOidcUser(
+                    roles.stream().map(org.springframework.security.core.authority.SimpleGrantedAuthority::new).toList(),
+                    user.getIdToken(),
+                    user.getUserInfo(),
                     "email"
             );
         };
