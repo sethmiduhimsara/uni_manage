@@ -33,12 +33,20 @@ function App() {
 
   const isAdmin = user?.roles?.includes('ROLE_ADMIN')
 
+  const handleLogout = async () => {
+    await fetch(`${apiBase}/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    setUser(null)
+  }
+
   if (loading) {
     return <div>Checking session...</div>
   }
 
   if (isAdmin) {
-    return <Admindashboard />
+    return <Admindashboard user={user} apiBase={apiBase} onLogout={handleLogout} />
   }
 
   return <Home />
