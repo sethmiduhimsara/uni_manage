@@ -20,15 +20,39 @@ public class GlobalExceptionHandler {
             ResourceNotFoundException ex,
             HttpServletRequest request
     ) {
-        ApiError error = new ApiError(
-                Instant.now(),
-                HttpStatus.NOT_FOUND.value(),
-                HttpStatus.NOT_FOUND.getReasonPhrase(),
-                ex.getMessage(),
-                request.getRequestURI(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
+        }
+
+        @ExceptionHandler(BookingNotFoundException.class)
+        public ResponseEntity<ApiError> handleBookingNotFound(
+            BookingNotFoundException ex,
+            HttpServletRequest request
+        ) {
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
+        }
+
+        @ExceptionHandler(BookingConflictException.class)
+        public ResponseEntity<ApiError> handleBookingConflict(
+            BookingConflictException ex,
+            HttpServletRequest request
+        ) {
+        return buildError(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI(), null);
+        }
+
+        @ExceptionHandler(BadRequestException.class)
+        public ResponseEntity<ApiError> handleBadRequest(
+            BadRequestException ex,
+            HttpServletRequest request
+        ) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), null);
+        }
+
+        @ExceptionHandler(ForbiddenOperationException.class)
+        public ResponseEntity<ApiError> handleForbidden(
+            ForbiddenOperationException ex,
+            HttpServletRequest request
+        ) {
+        return buildError(HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -41,14 +65,23 @@ public class GlobalExceptionHandler {
             fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
         }
 
+        return buildError(HttpStatus.BAD_REQUEST, "Validation failed", request.getRequestURI(), fieldErrors);
+        }
+
+        private ResponseEntity<ApiError> buildError(
+            HttpStatus status,
+            String message,
+            String path,
+            Map<String, String> fieldErrors
+        ) {
         ApiError error = new ApiError(
-                Instant.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                "Validation failed",
-                request.getRequestURI(),
-                fieldErrors
+            Instant.now(),
+            status.value(),
+            status.getReasonPhrase(),
+            message,
+            path,
+            fieldErrors
         );
-        return ResponseEntity.badRequest().body(error);
+        return ResponseEntity.status(status).body(error);
     }
 }

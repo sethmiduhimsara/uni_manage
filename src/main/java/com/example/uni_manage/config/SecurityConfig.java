@@ -36,6 +36,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/error", "/login**", "/oauth2/**").permitAll()
                 .requestMatchers("/api/auth/me").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/bookings").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/bookings/me").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/bookings/*/cancel").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/bookings/*/approve").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/bookings/*/reject").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/bookings/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/resources/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/api/resources/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
