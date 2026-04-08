@@ -43,12 +43,13 @@ function Home() {
 	}
 
 	return (
-		<div className="app-shell">
-			<div className="backdrop" aria-hidden="true">
-				<span className="orb orb-teal" />
-				<span className="orb orb-amber" />
-				<span className="grid" />
-			</div>
+		<div className="home-page">
+			<div className="app-shell">
+				<div className="backdrop" aria-hidden="true">
+					<span className="orb orb-teal" />
+					<span className="orb orb-amber" />
+					<span className="grid" />
+				</div>
 
 			<header className="topbar">
 				<div className="brand">
@@ -204,13 +205,14 @@ function Home() {
 				</section>
 			</main>
 
-			<footer className="footer" id="support">
-				<div>
-					<h2>Need support?</h2>
-					<p>Contact the campus operations desk or review the API docs.</p>
-				</div>
-				<button className="button ghost">Open API Reference</button>
-			</footer>
+				<footer className="footer" id="support">
+					<div>
+						<h2>Need support?</h2>
+						<p>Contact the campus operations desk or review the API docs.</p>
+					</div>
+					<button className="button ghost">Open API Reference</button>
+				</footer>
+			</div>
 		</div>
 	)
 }

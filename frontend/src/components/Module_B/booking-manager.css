@@ -1,0 +1,119 @@
+.booking-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.booking-manager header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.booking-manager h1 {
+  font-size: 28px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.filters input,
+.filters select,
+.action-panel input {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  font: inherit;
+  background: #fff;
+  width: 100%;
+}
+
+.table-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+  overflow-x: auto;
+}
+
+.table-card table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table-card th,
+.table-card td {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.action-panel {
+  display: grid;
+  gap: 12px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+.action-panel h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn.ghost {
+  background: transparent;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  color: var(--text-strong);
+}
+
+.btn.danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+.error {
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.status {
+  color: var(--text-muted);
+}
+
+.muted {
+  color: var(--text-muted);
+}
