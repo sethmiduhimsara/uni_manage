@@ -231,7 +231,7 @@ function ResourceManager({ apiBase }) {
           rows="3"
         />
         <button className="button primary" type="submit">
-          Save resource
+          Save resource.
         </button>
       </form>
     </section>
