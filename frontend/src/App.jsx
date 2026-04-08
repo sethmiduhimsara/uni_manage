@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Home from './components/Home/Home'
 import Admindashboard from './components/Module_E/Admindashboard'
+import UserDashboard from './components/User/UserDashboard'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -47,6 +48,9 @@ function App() {
 
   if (isAdmin) {
     return <Admindashboard user={user} apiBase={apiBase} onLogout={handleLogout} />
+  }
+  if (user) {
+    return <UserDashboard user={user} apiBase={apiBase} onLogout={handleLogout} />
   }
 
   return <Home />
