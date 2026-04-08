@@ -8,4 +8,5 @@ public interface ResourceRepository extends MongoRepository<Resource, String> {
     List<Resource> findByType(String type);
     List<Resource> findByLocation(String location);
     List<Resource> findByStatus(String status);
+    List<Resource> findByCapacityGreaterThanEqual(int capacity);
 }
