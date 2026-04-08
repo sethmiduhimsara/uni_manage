@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import ResourceManager from '../Module_A/ResourceManager'
 import BookingManager from '../Module_B/BookingManager'
+import TicketManager from '../Module_C/TicketManager'
 import './admindashboard.css'
 
 const MODULES = [
@@ -47,6 +48,8 @@ function Admindashboard({ user, apiBase, onLogout }) {
           <ResourceManager apiBase={apiBase} />
         ) : activeModule === 'module-b' ? (
           <BookingManager apiBase={apiBase} />
+        ) : activeModule === 'module-c' ? (
+          <TicketManager apiBase={apiBase} />
         ) : (
           <div className="placeholder">
             <p>Module is coming next.</p>
