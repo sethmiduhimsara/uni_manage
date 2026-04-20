@@ -1,5 +1,6 @@
 package com.example.uni_manage.service;
 
+import com.example.uni_manage.config.AppSecurityProperties;
 import com.example.uni_manage.config.AppStorageProperties;
 import com.example.uni_manage.dto.TicketAssignRequest;
 import com.example.uni_manage.dto.TicketCommentRequest;
@@ -49,6 +50,7 @@ public class TicketService {
     private final ResourceRepository resourceRepository;
     private final AppStorageProperties storageProperties;
     private final NotificationService notificationService;
+    private final AppSecurityProperties securityProperties;
 
     public Ticket createTicket(TicketCreateRequest request, List<MultipartFile> files, String userEmail) {
         validateLocationOrResource(request);
@@ -75,6 +77,13 @@ public class TicketService {
             saved.setUpdatedAt(Instant.now());
             saved = ticketRepository.save(saved);
         }
+        notificationService.notifyAdmins(
+                securityProperties.adminEmails(),
+                NotificationType.TICKET_CREATED,
+                "New maintenance ticket",
+                "A new ticket was submitted by " + userEmail + ".",
+                saved.getId()
+        );
         return saved;
     }
 

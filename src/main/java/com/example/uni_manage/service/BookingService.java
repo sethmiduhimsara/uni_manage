@@ -1,6 +1,7 @@
 package com.example.uni_manage.service;
 
 import com.example.uni_manage.dto.BookingRequest;
+import com.example.uni_manage.config.AppSecurityProperties;
 import com.example.uni_manage.exception.BadRequestException;
 import com.example.uni_manage.exception.BookingConflictException;
 import com.example.uni_manage.exception.BookingNotFoundException;
@@ -30,6 +31,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final ResourceRepository resourceRepository;
     private final NotificationService notificationService;
+    private final AppSecurityProperties securityProperties;
 
     public Booking createBooking(BookingRequest request, String userEmail) {
         validateTimeRange(request.startTime(), request.endTime());
@@ -47,7 +49,15 @@ public class BookingService {
         booking.setUserEmail(userEmail);
         booking.setCreatedAt(Instant.now());
         booking.setUpdatedAt(Instant.now());
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        notificationService.notifyAdmins(
+            securityProperties.adminEmails(),
+            NotificationType.BOOKING_REQUESTED,
+            "New booking request",
+            "A new booking request was submitted.",
+            saved.getId()
+        );
+        return saved;
     }
 
     public List<Booking> getBookingsForUser(String userEmail) {
