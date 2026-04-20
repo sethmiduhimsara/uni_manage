@@ -35,6 +35,21 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
+    public void notifyAdmins(
+            List<String> adminEmails,
+            NotificationType type,
+            String title,
+            String message,
+            String referenceId
+    ) {
+        if (adminEmails == null || adminEmails.isEmpty()) {
+            return;
+        }
+        for (String adminEmail : adminEmails) {
+            createNotification(adminEmail, type, title, message, referenceId);
+        }
+    }
+
     public List<Notification> getNotificationsForUser(String userEmail, boolean unreadOnly) {
         if (unreadOnly) {
             return notificationRepository.findByUserEmailAndReadFalseOrderByCreatedAtDesc(userEmail);
