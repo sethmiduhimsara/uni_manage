@@ -25,6 +25,23 @@ function MyBookings({ apiBase }) {
     }
   }
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this booking?')) return
+    setError('')
+    try {
+      const response = await fetch(`${apiBase}/api/bookings/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error('Failed to delete booking')
+      }
+      loadBookings()
+    } catch (err) {
+      setError(err.message || 'Failed to delete booking')
+    }
+  }
+
   useEffect(() => {
     loadBookings()
   }, [])
@@ -53,12 +70,13 @@ function MyBookings({ apiBase }) {
               <th>Date</th>
               <th>Time</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {bookings.length === 0 ? (
               <tr>
-                <td colSpan="4">No bookings yet.</td>
+                <td colSpan="5">No bookings yet.</td>
               </tr>
             ) : (
               bookings.map((booking) => (
@@ -69,6 +87,14 @@ function MyBookings({ apiBase }) {
                     {booking.startTime} - {booking.endTime}
                   </td>
                   <td>{booking.status}</td>
+                  <td>
+                    <button
+                      className="btn danger"
+                      onClick={() => handleDelete(booking.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
