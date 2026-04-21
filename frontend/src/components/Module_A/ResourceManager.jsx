@@ -7,7 +7,6 @@ const emptyForm = {
   location: '',
   capacity: 1,
   status: 'ACTIVE',
-  availabilityWindows: '',
   description: '',
 }
 
@@ -20,6 +19,7 @@ function ResourceManager({ apiBase }) {
     minCapacity: '',
   })
   const [form, setForm] = useState(emptyForm)
+  const [editingId, setEditingId] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -66,7 +66,7 @@ function ResourceManager({ apiBase }) {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleCreate = async (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
     const payload = {
@@ -75,28 +75,65 @@ function ResourceManager({ apiBase }) {
       location: form.location,
       capacity: Number(form.capacity),
       status: form.status,
-      availabilityWindows: form.availabilityWindows
-        .split(',')
-        .map((item) => item.trim())
-        .filter(Boolean),
       description: form.description,
     }
 
     try {
-      const response = await fetch(`${apiBase}/api/resources`, {
-        method: 'POST',
+      const url = editingId
+        ? `${apiBase}/api/resources/${editingId}`
+        : `${apiBase}/api/resources`
+      const method = editingId ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload),
       })
       if (!response.ok) {
-        throw new Error('Failed to create resource')
+        throw new Error(`Failed to ${editingId ? 'update' : 'create'} resource`)
       }
       setForm(emptyForm)
+      setEditingId(null)
       await loadResources()
     } catch (err) {
-      setError(err.message || 'Failed to create resource')
+      setError(err.message || 'Action failed')
     }
+  }
+
+  const handleEdit = (resource) => {
+    setEditingId(resource.id)
+    setForm({
+      name: resource.name,
+      type: resource.type,
+      location: resource.location,
+      capacity: resource.capacity,
+      status: resource.status,
+      description: resource.description || '',
+    })
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this resource?')) return
+    setError('')
+    try {
+      const response = await fetch(`${apiBase}/api/resources/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error('Failed to delete resource')
+      }
+      await loadResources()
+    } catch (err) {
+      setError(err.message || 'Delete failed')
+    }
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setForm(emptyForm)
   }
 
   return (
@@ -157,12 +194,13 @@ function ResourceManager({ apiBase }) {
               <th>Location</th>
               <th>Capacity</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {resources.length === 0 ? (
               <tr>
-                <td colSpan="5">No resources yet.</td>
+                <td colSpan="6">No resources yet.</td>
               </tr>
             ) : (
               resources.map((resource) => (
@@ -171,7 +209,21 @@ function ResourceManager({ apiBase }) {
                   <td>{resource.type}</td>
                   <td>{resource.location}</td>
                   <td>{resource.capacity}</td>
-                  <td>{resource.status}</td>
+                  <td>
+                    <span className={`badge ${resource.status.toLowerCase()}`}>
+                      {resource.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="actions">
+                      <button className="action-btn edit" onClick={() => handleEdit(resource)} title="Edit">
+                        ✎
+                      </button>
+                      <button className="action-btn delete" onClick={() => handleDelete(resource.id)} title="Delete">
+                        ✕
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
@@ -179,8 +231,8 @@ function ResourceManager({ apiBase }) {
         </table>
       </div>
 
-      <form className="form-card" onSubmit={handleCreate}>
-        <h2>Create resource</h2>
+      <form className="form-card" onSubmit={handleSubmit}>
+        <h2>{editingId ? 'Update resource' : 'Create resource'}</h2>
         <div className="grid">
           <input
             name="name"
@@ -215,13 +267,6 @@ function ResourceManager({ apiBase }) {
             <option value="ACTIVE">Active</option>
             <option value="OUT_OF_SERVICE">Out of service</option>
           </select>
-          <input
-            name="availabilityWindows"
-            value={form.availabilityWindows}
-            onChange={handleFormChange}
-            placeholder="Availability windows (comma-separated)"
-            required
-          />
         </div>
         <textarea
           name="description"
@@ -230,9 +275,16 @@ function ResourceManager({ apiBase }) {
           placeholder="Description"
           rows="3"
         />
-        <button className="button primary" type="submit">
-          Save resource.
-        </button>
+        <div className="form-actions">
+          <button className="button primary" type="submit">
+            {editingId ? 'Update Resource' : 'Save Resource'}
+          </button>
+          {editingId && (
+            <button className="button ghost" type="button" onClick={cancelEdit}>
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
     </section>
   )
