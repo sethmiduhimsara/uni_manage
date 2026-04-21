@@ -16,6 +16,7 @@ function BookingRequest({ apiBase }) {
   const [loadingResources, setLoadingResources] = useState(false)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     const loadResources = async () => {
@@ -47,6 +48,7 @@ function BookingRequest({ apiBase }) {
     event.preventDefault()
     setError('')
     setStatus('')
+    setSubmitting(true)
     try {
       const response = await fetch(`${apiBase}/api/bookings`, {
         method: 'POST',
@@ -58,12 +60,15 @@ function BookingRequest({ apiBase }) {
         }),
       })
       if (!response.ok) {
-        throw new Error('Failed to submit booking')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to submit booking')
       }
       setForm(emptyForm)
       setStatus('Booking request submitted.')
     } catch (err) {
-      setError(err.message || 'Failed to submit booking')
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -71,7 +76,7 @@ function BookingRequest({ apiBase }) {
     <section className="user-booking">
       <header>
         <div>
-          <p className="eyebrow">Module B</p>
+          {/* <p className="eyebrow">Module B</p> */}
           <h1>Request a Booking</h1>
           <p className="lead">Submit a booking request for a resource.</p>
         </div>
@@ -133,8 +138,8 @@ function BookingRequest({ apiBase }) {
         </div>
         {error ? <p className="error">{error}</p> : null}
         {status ? <p className="status">{status}</p> : null}
-        <button className="btn primary" type="submit">
-          Submit booking
+        <button className="btn primary" type="submit" disabled={submitting}>
+          {submitting ? 'Submitting...' : 'Submit booking'}
         </button>
       </form>
     </section>
