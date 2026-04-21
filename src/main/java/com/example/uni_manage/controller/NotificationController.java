@@ -2,6 +2,7 @@ package com.example.uni_manage.controller;
 
 import com.example.uni_manage.model.Notification;
 import com.example.uni_manage.service.NotificationService;
+import com.example.uni_manage.exception.ForbiddenOperationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -40,6 +41,19 @@ public class NotificationController {
     }
 
     private String getEmail(OAuth2User user) {
-        return (String) user.getAttributes().get("email");
+        if (user == null) {
+            throw new ForbiddenOperationException("Authentication required");
+        }
+        Object email = user.getAttributes().get("email");
+        if (email == null) {
+            email = user.getAttributes().get("preferred_username");
+        }
+        if (email == null) {
+            email = user.getName();
+        }
+        if (email == null) {
+            throw new ForbiddenOperationException("Email claim not available");
+        }
+        return email.toString();
     }
 }
