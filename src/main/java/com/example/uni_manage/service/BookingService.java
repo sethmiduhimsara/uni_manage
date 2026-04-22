@@ -150,6 +150,14 @@ public class BookingService {
         return saved;
     }
 
+    public void deleteBooking(String id, String requesterEmail) {
+        Booking booking = getBooking(id);
+        if (!booking.getUserEmail().equalsIgnoreCase(requesterEmail)) {
+            throw new ForbiddenOperationException("You are not allowed to delete this booking");
+        }
+        bookingRepository.deleteById(id);
+    }
+
     private Booking getBooking(String id) {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + id));
