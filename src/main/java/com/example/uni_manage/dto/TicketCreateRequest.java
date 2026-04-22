@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+//bug fixed: added validation annotations to ensure required fields are provided and have valid values
 public record TicketCreateRequest(
         String resourceId,
         String location,
