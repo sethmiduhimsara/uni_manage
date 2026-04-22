@@ -75,6 +75,15 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.cancelBooking(id, getEmail(user), isAdmin));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBooking(
+            @PathVariable String id,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal OAuth2User user
+    ) {
+        bookingService.deleteBooking(id, getEmail(user));
+        return ResponseEntity.noContent().build();
+    }
+
     private String getEmail(OAuth2User user) {
         return (String) user.getAttributes().get("email");
     }
