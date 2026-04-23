@@ -10,6 +10,17 @@ const emptyForm = {
   contactDetails: '',
 }
 
+async function parseApiError(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+    if (data?.message) return data.message
+    if (data?.error) return data.error
+  } catch {
+    // Fall back to generic message when API body is not JSON.
+  }
+  return fallbackMessage
+}
+
 function TicketRequest({ apiBase }) {
   const [form, setForm] = useState(emptyForm)
   const [files, setFiles] = useState([])
@@ -45,7 +56,14 @@ function TicketRequest({ apiBase }) {
   }
 
   const handleFiles = (event) => {
-    setFiles(Array.from(event.target.files || []))
+    const selected = Array.from(event.target.files || [])
+    if (selected.length > 3) {
+      setError('You can upload up to 3 images only.')
+      setFiles(selected.slice(0, 3))
+      return
+    }
+    setError('')
+    setFiles(selected)
   }
 
   const handleSubmit = async (event) => {
@@ -76,11 +94,11 @@ function TicketRequest({ apiBase }) {
         body,
       })
       if (!response.ok) {
-        throw new Error('Failed to submit ticket')
+        throw new Error(await parseApiError(response, 'Failed to submit ticket'))
       }
       setForm(emptyForm)
       setFiles([])
-      setStatus('Ticket submitted.')
+      setStatus('Ticket submitted successfully.')
     } catch (err) {
       setError(err.message || 'Failed to submit ticket')
     }
@@ -147,6 +165,7 @@ function TicketRequest({ apiBase }) {
           required
         />
         <input type="file" multiple accept="image/*" onChange={handleFiles} />
+        <p className="hint">Attach up to 3 images (JPG, PNG, GIF, WEBP).</p>
         {error ? <p className="error">{error}</p> : null}
         {status ? <p className="status">{status}</p> : null}
         <button className="btn primary" type="submit">
