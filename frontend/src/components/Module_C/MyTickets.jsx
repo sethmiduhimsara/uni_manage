@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react'
 import './user-ticket.css'
 
+async function parseApiError(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+    if (data?.message) return data.message
+    if (data?.error) return data.error
+  } catch {
+    // Fall back to generic message when API body is not JSON.
+  }
+  return fallbackMessage
+}
+
 function MyTickets({ apiBase }) {
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(false)
@@ -14,7 +25,7 @@ function MyTickets({ apiBase }) {
         credentials: 'include',
       })
       if (!response.ok) {
-        throw new Error('Failed to load tickets')
+        throw new Error(await parseApiError(response, 'Failed to load tickets'))
       }
       const data = await response.json()
       setTickets(data)
@@ -27,7 +38,7 @@ function MyTickets({ apiBase }) {
 
   useEffect(() => {
     loadTickets()
-  }, [])
+  }, [apiBase])
 
   return (
     <section className="user-ticket">
@@ -58,7 +69,7 @@ function MyTickets({ apiBase }) {
           <tbody>
             {tickets.length === 0 ? (
               <tr>
-                <td colSpan="4">No tickets yet.</td>
+                <td colSpan="4">No tickets yet. Submit an incident from Report Issue.</td>
               </tr>
             ) : (
               tickets.map((ticket) => (

@@ -12,11 +12,23 @@ const emptyFilters = {
 const statusOptions = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED']
 const priorityOptions = ['LOW', 'MEDIUM', 'HIGH']
 
+async function parseApiError(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+    if (data?.message) return data.message
+    if (data?.error) return data.error
+  } catch {
+    // Fall back to generic message when API body is not JSON.
+  }
+  return fallbackMessage
+}
+
 function TicketManager({ apiBase }) {
   const [tickets, setTickets] = useState([])
   const [filters, setFilters] = useState(emptyFilters)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [status, setStatus] = useState('')
   const [action, setAction] = useState({ id: '', type: '', value: '' })
 
   const filterQuery = useMemo(() => {
@@ -38,7 +50,7 @@ function TicketManager({ apiBase }) {
         : `${apiBase}/api/tickets`
       const response = await fetch(url, { credentials: 'include' })
       if (!response.ok) {
-        throw new Error('Failed to load tickets')
+        throw new Error(await parseApiError(response, 'Failed to load tickets'))
       }
       const data = await response.json()
       setTickets(data)
@@ -59,6 +71,7 @@ function TicketManager({ apiBase }) {
   }
 
   const openAction = (id, type) => {
+    setStatus('')
     setAction({ id, type, value: '' })
   }
 
@@ -68,6 +81,13 @@ function TicketManager({ apiBase }) {
 
   const submitAction = async () => {
     setError('')
+    setStatus('')
+
+    if (!action.id || !action.type || !action.value) {
+      setError('Please complete the required action details before confirming.')
+      return
+    }
+
     try {
       const endpoint = `${apiBase}/api/tickets/${action.id}/${action.type}`
       const payload =
@@ -81,8 +101,9 @@ function TicketManager({ apiBase }) {
         body: JSON.stringify(payload),
       })
       if (!response.ok) {
-        throw new Error(`Failed to ${action.type} ticket`)
+        throw new Error(await parseApiError(response, `Failed to ${action.type} ticket`))
       }
+      setStatus(action.type === 'assign' ? 'Technician assigned successfully.' : 'Ticket status updated successfully.')
       closeAction()
       await loadTickets()
     } catch (err) {
@@ -141,6 +162,7 @@ function TicketManager({ apiBase }) {
       </div>
 
       {error ? <p className="error">{error}</p> : null}
+      {status ? <p className="status success">{status}</p> : null}
       {loading ? <p className="status">Loading tickets...</p> : null}
 
       <div className="table-card">
