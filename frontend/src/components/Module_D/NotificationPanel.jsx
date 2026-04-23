@@ -19,6 +19,16 @@ function NotificationPanel({ apiBase, onUnreadCountChange }) {
   const [error, setError] = useState("");
   const [unreadOnly, setUnreadOnly] = useState(false);
 
+  const formatTimestamp = (value) => {
+    if (!value) return "";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "";
+    return new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(parsed);
+  };
+
   const loadNotifications = async () => {
     setLoading(true);
     setError("");
@@ -85,6 +95,26 @@ function NotificationPanel({ apiBase, onUnreadCountChange }) {
     }
   };
 
+  const clearAll = async () => {
+    try {
+      const response = await fetch(`${apiBase}/api/notifications`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(
+          await parseApiError(response, "Failed to clear notifications"),
+        );
+      }
+      setNotifications([]);
+      if (onUnreadCountChange) {
+        onUnreadCountChange(0);
+      }
+    } catch (err) {
+      setError(err.message || "Failed to clear notifications");
+    }
+  };
+
   return (
     <section className="notification-panel">
       <header>
@@ -112,6 +142,9 @@ function NotificationPanel({ apiBase, onUnreadCountChange }) {
           <button className="btn primary" type="button" onClick={markAllRead}>
             Mark all read
           </button>
+          <button className="btn ghost" type="button" onClick={clearAll}>
+            Clear all
+          </button>
         </div>
       </header>
 
@@ -138,6 +171,7 @@ function NotificationPanel({ apiBase, onUnreadCountChange }) {
                   <span className="meta">Type: {item.type}</span>
                 </div>
                 <div className="card-actions">
+                  <span className="time">{formatTimestamp(item.createdAt)}</span>
                   {!item.read ? (
                     <button
                       className="btn ghost"

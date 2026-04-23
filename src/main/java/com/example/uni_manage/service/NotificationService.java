@@ -75,4 +75,8 @@ public class NotificationService {
         notificationRepository.saveAll(notifications);
         return notifications.size();
     }
+
+    public long clearAll(String userEmail) {
+        return notificationRepository.deleteByUserEmail(userEmail);
+    }
 }
