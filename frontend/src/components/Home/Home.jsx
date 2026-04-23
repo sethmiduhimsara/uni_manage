@@ -4,6 +4,10 @@ import "./home.css";
 function Home() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loginMessage, setLoginMessage] = useState("");
+  const [showAuthForm, setShowAuthForm] = useState(false);
+  const [emailValue, setEmailValue] = useState("");
+  const [passwordValue, setPasswordValue] = useState("");
 
   const apiBase = useMemo(() => {
     return import.meta.env.VITE_API_BASE || "http://localhost:8080";
@@ -32,6 +36,22 @@ function Home() {
 
   const handleLogin = () => {
     window.location.href = `${apiBase}/oauth2/authorization/google`;
+  };
+
+  const handleEmailLogin = (event) => {
+    event.preventDefault();
+    setLoginMessage("Password sign-in is not enabled yet. Use Google sign-in.");
+  };
+
+  const openAuthForm = () => {
+    setLoginMessage("");
+    setShowAuthForm(true);
+    setEmailValue("");
+    setPasswordValue("");
+  };
+
+  const closeAuthForm = () => {
+    setShowAuthForm(false);
   };
 
   const handleDashboardShortcut = () => {
@@ -93,17 +113,82 @@ function Home() {
               </>
             ) : (
               <>
-                <div>
-                  <p className="status strong">Guest access</p>
-                  <p className="status">Sign in to manage bookings</p>
+                <div className="auth-prompt">
+                  <div className="auth-actions">
+                    <button className="button ghost" onClick={openAuthForm}>
+                      Login
+                    </button>
+                    <button className="button primary" onClick={openAuthForm}>
+                      Sign up
+                    </button>
+                  </div>
                 </div>
-                <button className="button primary" onClick={handleLogin}>
-                  Sign in with Google
-                </button>
               </>
             )}
           </div>
         </header>
+
+        {!user && showAuthForm ? (
+          <div className="auth-overlay" role="dialog" aria-modal="true">
+            <button
+              className="auth-backdrop"
+              type="button"
+              aria-label="Close authentication"
+              onClick={closeAuthForm}
+            />
+            <div className="auth-modal">
+              <div className="auth-modal-header">
+                <button className="button ghost" onClick={closeAuthForm}>
+                  Close
+                </button>
+              </div>
+              <form className="auth-fields" onSubmit={handleEmailLogin}>
+                <label className="field">
+                  <span>
+                    Email address
+                    {!emailValue ? (
+                      <em className="required">Required</em>
+                    ) : null}
+                  </span>
+                  <input
+                    type="email"
+                    name="email"
+                    value={emailValue}
+                    onChange={(event) => setEmailValue(event.target.value)}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>
+                    Password
+                    {!passwordValue ? (
+                      <em className="required">Required</em>
+                    ) : null}
+                  </span>
+                  <input
+                    type="password"
+                    name="password"
+                    value={passwordValue}
+                    onChange={(event) => setPasswordValue(event.target.value)}
+                    required
+                  />
+                </label>
+                <button className="button ghost" type="submit">
+                  Sign in
+                </button>
+              </form>
+              <div className="divider">
+                <span>or</span>
+              </div>
+              <button className="button primary" onClick={handleLogin}>
+                Sign in with Google
+              </button>
+              {loginMessage ? (
+                <p className="auth-note">{loginMessage}</p>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
         <main className="content">
           <section className="hero">
