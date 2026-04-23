@@ -10,6 +10,17 @@ const emptyForm = {
   expectedAttendees: 1,
 }
 
+async function parseApiError(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+    if (data?.message) return data.message
+    if (data?.error) return data.error
+  } catch {
+    // Ignore JSON parse errors and use fallback.
+  }
+  return fallbackMessage
+}
+
 function BookingRequest({ apiBase }) {
   const [form, setForm] = useState(emptyForm)
   const [resources, setResources] = useState([])
@@ -25,7 +36,7 @@ function BookingRequest({ apiBase }) {
           credentials: 'include',
         })
         if (!response.ok) {
-          throw new Error('Failed to load resources')
+          throw new Error(await parseApiError(response, 'Failed to load resources'))
         }
         const data = await response.json()
         setResources(data)
@@ -58,10 +69,10 @@ function BookingRequest({ apiBase }) {
         }),
       })
       if (!response.ok) {
-        throw new Error('Failed to submit booking')
+        throw new Error(await parseApiError(response, 'Failed to submit booking'))
       }
       setForm(emptyForm)
-      setStatus('Booking request submitted.')
+      setStatus('Booking request submitted successfully.')
     } catch (err) {
       setError(err.message || 'Failed to submit booking')
     }

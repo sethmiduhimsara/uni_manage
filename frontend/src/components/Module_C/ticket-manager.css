@@ -2,8 +2,10 @@
   display: flex;
   flex-direction: column;
   gap: 22px;
-  max-width: 1100px;
+  width: 100%;
+  max-width: none;
   margin: 0 auto;
+  min-width: 0;
 }
 
 .ticket-manager header {
@@ -11,6 +13,8 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .ticket-manager h1 {
@@ -22,8 +26,9 @@
 
 .filters {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 14px;
+  min-width: 0;
 }
 
 .filters input,
@@ -45,12 +50,42 @@
   box-shadow: var(--shadow-soft);
   overflow-x: auto;
   border: 1px solid var(--border-soft);
+  min-width: 0;
 }
 
 .table-card table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 14px;
+}
+
+.ticket-table {
+  min-width: 0;
+}
+
+.ticket-col-ticket {
+  width: 24%;
+}
+
+.ticket-col-priority {
+  width: 10%;
+}
+
+.ticket-col-status {
+  width: 11%;
+}
+
+.ticket-col-assigned {
+  width: 18%;
+}
+
+.ticket-col-created {
+  width: 17%;
+}
+
+.ticket-col-action {
+  width: 20%;
 }
 
 .table-card th,
@@ -58,6 +93,9 @@
   text-align: left;
   padding: 12px 10px;
   border-bottom: 1px solid rgba(15, 31, 53, 0.08);
+  vertical-align: top;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .table-card th {
@@ -81,6 +119,8 @@
 .action-row {
   display: flex;
   gap: 10px;
+  flex-wrap: nowrap;
+  align-items: center;
 }
 
 .action-panel {
@@ -91,6 +131,7 @@
   padding: 18px;
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--border-soft);
+  min-width: 0;
 }
 
 .action-panel h2 {
@@ -103,16 +144,18 @@
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .btn {
   border: none;
   border-radius: 999px;
-  padding: 10px 18px;
+  padding: 8px 12px;
   font-weight: 600;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn:hover {
@@ -155,8 +198,48 @@
     font-size: 32px;
   }
 
+  .ticket-table {
+    min-width: 940px;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket-manager header {
+    align-items: stretch;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .table-card,
   .action-panel {
     border-radius: 16px;
+  }
+
+  .action-row {
+    gap: 8px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 1200px) {
+  .ticket-manager h1 {
+    font-size: 36px;
+  }
+
+  .ticket-manager {
+    gap: 18px;
+  }
+
+  .action-row {
+    gap: 8px;
   }
 }

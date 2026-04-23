@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './booking-manager.css'
+import SkeletonBlocks from '../common/SkeletonBlocks'
 
 const emptyFilters = {
   status: '',
@@ -8,11 +9,23 @@ const emptyFilters = {
   userEmail: '',
 }
 
+async function parseApiError(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+    if (data?.message) return data.message
+    if (data?.error) return data.error
+  } catch {
+    // Ignore JSON parse errors and use fallback.
+  }
+  return fallbackMessage
+}
+
 function BookingManager({ apiBase }) {
   const [bookings, setBookings] = useState([])
   const [filters, setFilters] = useState(emptyFilters)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [status, setStatus] = useState('')
   const [action, setAction] = useState({ id: '', type: '', reason: '' })
 
   const filterQuery = useMemo(() => {
@@ -33,7 +46,7 @@ function BookingManager({ apiBase }) {
         : `${apiBase}/api/bookings`
       const response = await fetch(url, { credentials: 'include' })
       if (!response.ok) {
-        throw new Error('Failed to load bookings')
+        throw new Error(await parseApiError(response, 'Failed to load bookings'))
       }
       const data = await response.json()
       setBookings(data)
@@ -54,6 +67,7 @@ function BookingManager({ apiBase }) {
   }
 
   const openAction = (id, type) => {
+    setStatus('')
     setAction({ id, type, reason: '' })
   }
 
@@ -63,6 +77,17 @@ function BookingManager({ apiBase }) {
 
   const submitAction = async () => {
     setError('')
+    setStatus('')
+
+    if (!action.id || !action.type) {
+      setError('Invalid action selection. Please retry.')
+      return
+    }
+    if (action.type === 'reject' && !action.reason.trim()) {
+      setError('Rejection reason is required.')
+      return
+    }
+
     try {
       const endpoint = `${apiBase}/api/bookings/${action.id}/${action.type}`
       const response = await fetch(endpoint, {
@@ -72,8 +97,11 @@ function BookingManager({ apiBase }) {
         body: JSON.stringify({ reason: action.reason }),
       })
       if (!response.ok) {
-        throw new Error(`Failed to ${action.type} booking`)
+        throw new Error(await parseApiError(response, `Failed to ${action.type} booking`))
       }
+      if (action.type === 'approve') setStatus('Booking approved successfully.')
+      if (action.type === 'reject') setStatus('Booking rejected successfully.')
+      if (action.type === 'cancel') setStatus('Booking cancelled successfully.')
       closeAction()
       await loadBookings()
     } catch (err) {
@@ -127,8 +155,15 @@ function BookingManager({ apiBase }) {
       </div>
 
       {error ? <p className="error">{error}</p> : null}
-      {loading ? <p className="status">Loading bookings...</p> : null}
+      {status ? <p className="status success">{status}</p> : null}
 
+      {loading ? (
+        <div className="table-card">
+          <SkeletonBlocks rows={5} columns={1} compact />
+        </div>
+      ) : null}
+
+      {!loading ? (
       <div className="table-card">
         <table>
           <thead>
@@ -192,6 +227,7 @@ function BookingManager({ apiBase }) {
           </tbody>
         </table>
       </div>
+      ) : null}
 
       {action.id ? (
         <div className="action-panel">

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './resource-manager.css'
+import SkeletonBlocks from '../common/SkeletonBlocks'
 
 const emptyForm = {
   name: '',
@@ -8,6 +9,17 @@ const emptyForm = {
   capacity: 1,
   status: 'ACTIVE',
   description: '',
+}
+
+async function parseApiError(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+    if (data?.message) return data.message
+    if (data?.error) return data.error
+  } catch {
+    // Ignore JSON parse errors and use fallback.
+  }
+  return fallbackMessage
 }
 
 function ResourceManager({ apiBase }) {
@@ -22,6 +34,7 @@ function ResourceManager({ apiBase }) {
   const [editingId, setEditingId] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [status, setStatus] = useState('')
 
   const filterQuery = useMemo(() => {
     const params = new URLSearchParams()
@@ -41,7 +54,7 @@ function ResourceManager({ apiBase }) {
         : `${apiBase}/api/resources`
       const response = await fetch(url, { credentials: 'include' })
       if (!response.ok) {
-        throw new Error('Failed to load resources')
+        throw new Error(await parseApiError(response, 'Failed to load resources'))
       }
       const data = await response.json()
       setResources(data)
@@ -69,6 +82,7 @@ function ResourceManager({ apiBase }) {
   const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
+    setStatus('')
     const payload = {
       name: form.name,
       type: form.type,
@@ -91,10 +105,11 @@ function ResourceManager({ apiBase }) {
         body: JSON.stringify(payload),
       })
       if (!response.ok) {
-        throw new Error(`Failed to ${editingId ? 'update' : 'create'} resource`)
+        throw new Error(await parseApiError(response, `Failed to ${editingId ? 'update' : 'create'} resource`))
       }
       setForm(emptyForm)
       setEditingId(null)
+      setStatus(editingId ? 'Resource updated successfully.' : 'Resource created successfully.')
       await loadResources()
     } catch (err) {
       setError(err.message || 'Action failed')
@@ -117,14 +132,16 @@ function ResourceManager({ apiBase }) {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this resource?')) return
     setError('')
+    setStatus('')
     try {
       const response = await fetch(`${apiBase}/api/resources/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       })
       if (!response.ok) {
-        throw new Error('Failed to delete resource')
+        throw new Error(await parseApiError(response, 'Failed to delete resource'))
       }
+      setStatus('Resource deleted successfully.')
       await loadResources()
     } catch (err) {
       setError(err.message || 'Delete failed')
@@ -183,8 +200,15 @@ function ResourceManager({ apiBase }) {
       </div>
 
       {error ? <p className="error">{error}</p> : null}
-      {loading ? <p className="status">Loading resources...</p> : null}
+      {status ? <p className="status success">{status}</p> : null}
 
+      {loading ? (
+        <div className="table-card">
+          <SkeletonBlocks rows={5} columns={1} compact />
+        </div>
+      ) : null}
+
+      {!loading ? (
       <div className="table-card">
         <table>
           <thead>
@@ -230,6 +254,7 @@ function ResourceManager({ apiBase }) {
           </tbody>
         </table>
       </div>
+      ) : null}
 
       <form className="form-card" onSubmit={handleSubmit}>
         <h2>{editingId ? 'Update resource' : 'Create resource'}</h2>

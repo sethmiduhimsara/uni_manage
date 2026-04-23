@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./ticket-manager.css";
+import SkeletonBlocks from "../common/SkeletonBlocks";
 
 const emptyFilters = {
   status: "",
@@ -188,10 +189,24 @@ function TicketManager({ apiBase }) {
 
       {error ? <p className="error">{error}</p> : null}
       {status ? <p className="status success">{status}</p> : null}
-      {loading ? <p className="status">Loading tickets...</p> : null}
 
-      <div className="table-card">
-        <table>
+      {loading ? (
+        <div className="table-card">
+          <SkeletonBlocks rows={5} columns={1} compact />
+        </div>
+      ) : null}
+
+      {!loading ? (
+        <div className="table-card">
+        <table className="ticket-table">
+          <colgroup>
+            <col className="ticket-col ticket-col-ticket" />
+            <col className="ticket-col ticket-col-priority" />
+            <col className="ticket-col ticket-col-status" />
+            <col className="ticket-col ticket-col-assigned" />
+            <col className="ticket-col ticket-col-created" />
+            <col className="ticket-col ticket-col-action" />
+          </colgroup>
           <thead>
             <tr>
               <th>Ticket</th>
@@ -243,7 +258,8 @@ function TicketManager({ apiBase }) {
             )}
           </tbody>
         </table>
-      </div>
+        </div>
+      ) : null}
 
       {action.id ? (
         <div className="action-panel">

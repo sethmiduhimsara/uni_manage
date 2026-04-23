@@ -1,5 +1,17 @@
 import { useEffect, useState } from 'react'
 import './notification-panel.css'
+import SkeletonBlocks from '../common/SkeletonBlocks'
+
+async function parseApiError(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+    if (data?.message) return data.message
+    if (data?.error) return data.error
+  } catch {
+    // Ignore JSON parse errors and use fallback.
+  }
+  return fallbackMessage
+}
 
 function NotificationPanel({ apiBase }) {
   const [notifications, setNotifications] = useState([])
@@ -16,7 +28,7 @@ function NotificationPanel({ apiBase }) {
         credentials: 'include',
       })
       if (!response.ok) {
-        throw new Error('Failed to load notifications')
+        throw new Error(await parseApiError(response, 'Failed to load notifications'))
       }
       const data = await response.json()
       setNotifications(data)
@@ -29,7 +41,7 @@ function NotificationPanel({ apiBase }) {
 
   useEffect(() => {
     loadNotifications()
-  }, [unreadOnly])
+  }, [apiBase, unreadOnly])
 
   const markRead = async (id) => {
     try {
@@ -38,7 +50,7 @@ function NotificationPanel({ apiBase }) {
         credentials: 'include',
       })
       if (!response.ok) {
-        throw new Error('Failed to mark as read')
+        throw new Error(await parseApiError(response, 'Failed to mark as read'))
       }
       await loadNotifications()
     } catch (err) {
@@ -53,7 +65,7 @@ function NotificationPanel({ apiBase }) {
         credentials: 'include',
       })
       if (!response.ok) {
-        throw new Error('Failed to mark all')
+        throw new Error(await parseApiError(response, 'Failed to mark all notifications'))
       }
       await loadNotifications()
     } catch (err) {
@@ -88,8 +100,13 @@ function NotificationPanel({ apiBase }) {
       </header>
 
       {error ? <p className="error">{error}</p> : null}
-      {loading ? <p className="status">Loading notifications...</p> : null}
+      {loading ? (
+        <div className="table-card">
+          <SkeletonBlocks rows={4} columns={1} compact />
+        </div>
+      ) : null}
 
+      {!loading ? (
       <div className="notification-list">
         {notifications.length === 0 ? (
           <div className="empty">No notifications found.</div>
@@ -121,6 +138,7 @@ function NotificationPanel({ apiBase }) {
           ))
         )}
       </div>
+      ) : null}
     </section>
   )
 }

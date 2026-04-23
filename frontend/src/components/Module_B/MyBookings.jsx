@@ -1,5 +1,17 @@
 import { useEffect, useState } from 'react'
 import './user-booking.css'
+import SkeletonBlocks from '../common/SkeletonBlocks'
+
+async function parseApiError(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+    if (data?.message) return data.message
+    if (data?.error) return data.error
+  } catch {
+    // Ignore JSON parse errors and use fallback.
+  }
+  return fallbackMessage
+}
 
 function MyBookings({ apiBase }) {
   const [bookings, setBookings] = useState([])
@@ -14,7 +26,7 @@ function MyBookings({ apiBase }) {
         credentials: 'include',
       })
       if (!response.ok) {
-        throw new Error('Failed to load bookings')
+        throw new Error(await parseApiError(response, 'Failed to load bookings'))
       }
       const data = await response.json()
       setBookings(data)
@@ -27,7 +39,7 @@ function MyBookings({ apiBase }) {
 
   useEffect(() => {
     loadBookings()
-  }, [])
+  }, [apiBase])
 
   return (
     <section className="user-booking">
@@ -43,8 +55,13 @@ function MyBookings({ apiBase }) {
       </header>
 
       {error ? <p className="error">{error}</p> : null}
-      {loading ? <p className="status">Loading bookings...</p> : null}
+      {loading ? (
+        <div className="table-card">
+          <SkeletonBlocks rows={4} columns={1} compact />
+        </div>
+      ) : null}
 
+      {!loading ? (
       <div className="table-card">
         <table>
           <thead>
@@ -75,6 +92,7 @@ function MyBookings({ apiBase }) {
           </tbody>
         </table>
       </div>
+      ) : null}
     </section>
   )
 }

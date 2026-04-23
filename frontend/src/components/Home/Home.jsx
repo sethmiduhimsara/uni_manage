@@ -34,6 +34,18 @@ function Home() {
 		window.location.href = `${apiBase}/oauth2/authorization/google`
 	}
 
+	const handleDashboardShortcut = () => {
+		if (user) {
+			window.location.reload()
+			return
+		}
+		handleLogin()
+	}
+
+	const handleSupportShortcut = () => {
+		document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' })
+	}
+
 	const handleLogout = async () => {
 		await fetch(`${apiBase}/logout`, {
 			method: 'POST',
@@ -103,10 +115,12 @@ function Home() {
 							community updated with real-time notifications.
 						</p>
 						<div className="hero-actions">
-							<button className="button primary" onClick={handleLogin}>
+							<button className="button primary" onClick={handleDashboardShortcut}>
 								Open Admin Console
 							</button>
-							<button className="button ghost">View Resource Catalogue</button>
+							<button className="button ghost" onClick={handleSupportShortcut}>
+								View Resource Catalogue
+							</button>
 						</div>
 					</div>
 

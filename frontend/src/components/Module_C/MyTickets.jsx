@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./user-ticket.css";
+import SkeletonBlocks from "../common/SkeletonBlocks";
 
 async function parseApiError(response, fallbackMessage) {
   try {
@@ -56,8 +57,13 @@ function MyTickets({ apiBase }) {
       </header>
 
       {error ? <p className="error">{error}</p> : null}
-      {loading ? <p className="status">Loading tickets...</p> : null}
+      {loading ? (
+        <div className="table-card">
+          <SkeletonBlocks rows={4} columns={1} compact />
+        </div>
+      ) : null}
 
+      {!loading ? (
       <div className="table-card">
         <table>
           <thead>
@@ -88,6 +94,7 @@ function MyTickets({ apiBase }) {
           </tbody>
         </table>
       </div>
+      ) : null}
     </section>
   );
 }
