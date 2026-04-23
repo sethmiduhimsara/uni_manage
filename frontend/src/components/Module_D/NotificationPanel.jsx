@@ -1,77 +1,83 @@
-import { useEffect, useState } from 'react'
-import './notification-panel.css'
-import SkeletonBlocks from '../common/SkeletonBlocks'
+import { useEffect, useState } from "react";
+import "./notification-panel.css";
+import SkeletonBlocks from "../common/SkeletonBlocks";
 
 async function parseApiError(response, fallbackMessage) {
   try {
-    const data = await response.json()
-    if (data?.message) return data.message
-    if (data?.error) return data.error
+    const data = await response.json();
+    if (data?.message) return data.message;
+    if (data?.error) return data.error;
   } catch {
     // Ignore JSON parse errors and use fallback.
   }
-  return fallbackMessage
+  return fallbackMessage;
 }
 
 function NotificationPanel({ apiBase }) {
-  const [notifications, setNotifications] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [unreadOnly, setUnreadOnly] = useState(false)
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [unreadOnly, setUnreadOnly] = useState(false);
 
   const loadNotifications = async () => {
-    setLoading(true)
-    setError('')
+    setLoading(true);
+    setError("");
     try {
-      const query = unreadOnly ? '?unreadOnly=true' : ''
+      const query = unreadOnly ? "?unreadOnly=true" : "";
       const response = await fetch(`${apiBase}/api/notifications${query}`, {
-        credentials: 'include',
-      })
+        credentials: "include",
+      });
       if (!response.ok) {
-        throw new Error(await parseApiError(response, 'Failed to load notifications'))
+        throw new Error(
+          await parseApiError(response, "Failed to load notifications"),
+        );
       }
-      const data = await response.json()
-      setNotifications(data)
+      const data = await response.json();
+      setNotifications(data);
     } catch (err) {
-      setError(err.message || 'Failed to load notifications')
+      setError(err.message || "Failed to load notifications");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadNotifications()
-  }, [apiBase, unreadOnly])
+    loadNotifications();
+  }, [apiBase, unreadOnly]);
 
   const markRead = async (id) => {
     try {
       const response = await fetch(`${apiBase}/api/notifications/${id}/read`, {
-        method: 'PUT',
-        credentials: 'include',
-      })
+        method: "PUT",
+        credentials: "include",
+      });
       if (!response.ok) {
-        throw new Error(await parseApiError(response, 'Failed to mark as read'))
+        throw new Error(
+          await parseApiError(response, "Failed to mark as read"),
+        );
       }
-      await loadNotifications()
+      await loadNotifications();
     } catch (err) {
-      setError(err.message || 'Failed to mark notification')
+      setError(err.message || "Failed to mark notification");
     }
-  }
+  };
 
   const markAllRead = async () => {
     try {
       const response = await fetch(`${apiBase}/api/notifications/read-all`, {
-        method: 'PUT',
-        credentials: 'include',
-      })
+        method: "PUT",
+        credentials: "include",
+      });
       if (!response.ok) {
-        throw new Error(await parseApiError(response, 'Failed to mark all notifications'))
+        throw new Error(
+          await parseApiError(response, "Failed to mark all notifications"),
+        );
       }
-      await loadNotifications()
+      await loadNotifications();
     } catch (err) {
-      setError(err.message || 'Failed to mark all notifications')
+      setError(err.message || "Failed to mark all notifications");
     }
-  }
+  };
 
   return (
     <section className="notification-panel">
@@ -90,7 +96,11 @@ function NotificationPanel({ apiBase }) {
             />
             Show unread only
           </label>
-          <button className="btn ghost" type="button" onClick={loadNotifications}>
+          <button
+            className="btn ghost"
+            type="button"
+            onClick={loadNotifications}
+          >
             Refresh
           </button>
           <button className="btn primary" type="button" onClick={markAllRead}>
@@ -107,40 +117,40 @@ function NotificationPanel({ apiBase }) {
       ) : null}
 
       {!loading ? (
-      <div className="notification-list">
-        {notifications.length === 0 ? (
-          <div className="empty">No notifications found.</div>
-        ) : (
-          notifications.map((item) => (
-            <article
-              key={item.id}
-              className={`notification-card ${item.read ? 'read' : 'unread'}`}
-            >
-              <div>
-                <h2>{item.title}</h2>
-                <p>{item.message}</p>
-                <span className="meta">Type: {item.type}</span>
-              </div>
-              <div className="card-actions">
-                {!item.read ? (
-                  <button
-                    className="btn ghost"
-                    type="button"
-                    onClick={() => markRead(item.id)}
-                  >
-                    Mark read
-                  </button>
-                ) : (
-                  <span className="muted">Read</span>
-                )}
-              </div>
-            </article>
-          ))
-        )}
-      </div>
+        <div className="notification-list">
+          {notifications.length === 0 ? (
+            <div className="empty">No notifications found.</div>
+          ) : (
+            notifications.map((item) => (
+              <article
+                key={item.id}
+                className={`notification-card ${item.read ? "read" : "unread"}`}
+              >
+                <div>
+                  <h2>{item.title}</h2>
+                  <p>{item.message}</p>
+                  <span className="meta">Type: {item.type}</span>
+                </div>
+                <div className="card-actions">
+                  {!item.read ? (
+                    <button
+                      className="btn ghost"
+                      type="button"
+                      onClick={() => markRead(item.id)}
+                    >
+                      Mark read
+                    </button>
+                  ) : (
+                    <span className="muted">Read</span>
+                  )}
+                </div>
+              </article>
+            ))
+          )}
+        </div>
       ) : null}
     </section>
-  )
+  );
 }
 
-export default NotificationPanel
+export default NotificationPanel;

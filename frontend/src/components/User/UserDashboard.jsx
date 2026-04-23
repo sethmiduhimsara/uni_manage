@@ -1,69 +1,89 @@
-import { useMemo, useState } from 'react'
-import BookingRequest from '../Module_B/BookingRequest'
-import MyBookings from '../Module_B/MyBookings'
-import TicketRequest from '../Module_C/TicketRequest'
-import MyTickets from '../Module_C/MyTickets'
-import NotificationPanel from '../Module_D/NotificationPanel'
-import './user-dashboard.css'
+import { useMemo, useState } from "react";
+import BookingRequest from "../Module_B/BookingRequest";
+import MyBookings from "../Module_B/MyBookings";
+import TicketRequest from "../Module_C/TicketRequest";
+import MyTickets from "../Module_C/MyTickets";
+import NotificationPanel from "../Module_D/NotificationPanel";
+import "./user-dashboard.css";
 
 const TABS = [
-  { id: 'book', label: 'Request Booking', description: 'Create new booking requests for campus resources.' },
-  { id: 'my-bookings', label: 'My Bookings', description: 'Track the status of your booking submissions.' },
-  { id: 'ticket', label: 'Report Issue', description: 'Submit maintenance incidents with details and images.' },
-  { id: 'my-tickets', label: 'My Tickets', description: 'Monitor your reported incidents and technician updates.' },
-  { id: 'notifications', label: 'Notifications', description: 'Stay updated with booking, ticket, and system alerts.' },
-]
+  {
+    id: "book",
+    label: "Request Booking",
+    description: "Create new booking requests for campus resources.",
+  },
+  {
+    id: "my-bookings",
+    label: "My Bookings",
+    description: "Track the status of your booking submissions.",
+  },
+  {
+    id: "ticket",
+    label: "Report Issue",
+    description: "Submit maintenance incidents with details and images.",
+  },
+  {
+    id: "my-tickets",
+    label: "My Tickets",
+    description: "Monitor your reported incidents and technician updates.",
+  },
+  {
+    id: "notifications",
+    label: "Notifications",
+    description: "Stay updated with booking, ticket, and system alerts.",
+  },
+];
 
 const KPI_BY_TAB = {
   book: [
-    { label: 'Open booking window', value: 'Today' },
-    { label: 'Pending approvals', value: '2' },
-    { label: 'Preferred rooms', value: '4' },
+    { label: "Open booking window", value: "Today" },
+    { label: "Pending approvals", value: "2" },
+    { label: "Preferred rooms", value: "4" },
   ],
-  'my-bookings': [
-    { label: 'Active bookings', value: '3' },
-    { label: 'Pending requests', value: '1' },
-    { label: 'This week usage', value: '14 hrs' },
+  "my-bookings": [
+    { label: "Active bookings", value: "3" },
+    { label: "Pending requests", value: "1" },
+    { label: "This week usage", value: "14 hrs" },
   ],
   ticket: [
-    { label: 'Open incidents', value: '1' },
-    { label: 'Avg response', value: '36m' },
-    { label: 'Attachments', value: 'Up to 3' },
+    { label: "Open incidents", value: "1" },
+    { label: "Avg response", value: "36m" },
+    { label: "Attachments", value: "Up to 3" },
   ],
-  'my-tickets': [
-    { label: 'Open tickets', value: '2' },
-    { label: 'In progress', value: '1' },
-    { label: 'Resolved this month', value: '5' },
+  "my-tickets": [
+    { label: "Open tickets", value: "2" },
+    { label: "In progress", value: "1" },
+    { label: "Resolved this month", value: "5" },
   ],
   notifications: [
-    { label: 'Unread alerts', value: '4' },
-    { label: 'System notices', value: '2' },
-    { label: 'Ticket updates', value: '3' },
+    { label: "Unread alerts", value: "4" },
+    { label: "System notices", value: "2" },
+    { label: "Ticket updates", value: "3" },
   ],
-}
+};
 
 function UserDashboard({ user, apiBase, onLogout }) {
-  const [activeTab, setActiveTab] = useState('book')
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState("book");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const subtitle = useMemo(() => {
-    return user?.email || 'user'
-  }, [user])
+    return user?.email || "user";
+  }, [user]);
 
   const activeTabMeta = useMemo(() => {
-    return TABS.find((tab) => tab.id === activeTab) || TABS[0]
-  }, [activeTab])
+    return TABS.find((tab) => tab.id === activeTab) || TABS[0];
+  }, [activeTab]);
 
-  const openMobileMenu = () => setSidebarOpen(true)
-  const closeMobileMenu = () => setSidebarOpen(false)
+  const openMobileMenu = () => setSidebarOpen(true);
+  const closeMobileMenu = () => setSidebarOpen(false);
 
   const handleTabSelect = (tabId) => {
-    setActiveTab(tabId)
-    closeMobileMenu()
-  }
+    setActiveTab(tabId);
+    closeMobileMenu();
+  };
 
   return (
-    <div className={`user-shell ${sidebarOpen ? 'sidebar-open' : ''}`}>
+    <div className={`user-shell ${sidebarOpen ? "sidebar-open" : ""}`}>
       <aside className="user-sidebar">
         <div className="sidebar-header">
           <span className="sidebar-mark">SC</span>
@@ -79,7 +99,7 @@ function UserDashboard({ user, apiBase, onLogout }) {
             <button
               key={tab.id}
               type="button"
-              className={activeTab === tab.id ? 'active' : ''}
+              className={activeTab === tab.id ? "active" : ""}
               onClick={() => handleTabSelect(tab.id)}
             >
               <span className="tab-label">{tab.label}</span>
@@ -91,14 +111,22 @@ function UserDashboard({ user, apiBase, onLogout }) {
           <p>Workspace mode: User Operations</p>
         </div>
 
-        <button className="sidebar-close" type="button" onClick={closeMobileMenu}>
+        <button
+          className="sidebar-close"
+          type="button"
+          onClick={closeMobileMenu}
+        >
           Close menu
         </button>
       </aside>
 
       <div className="user-workspace">
         <header className="workspace-topbar">
-          <button className="menu-toggle" type="button" onClick={openMobileMenu}>
+          <button
+            className="menu-toggle"
+            type="button"
+            onClick={openMobileMenu}
+          >
             Menu
           </button>
           <div className="workspace-title-block">
@@ -129,13 +157,13 @@ function UserDashboard({ user, apiBase, onLogout }) {
           </section>
 
           <div key={activeTab} className="view-stage">
-            {activeTab === 'book' ? (
+            {activeTab === "book" ? (
               <BookingRequest apiBase={apiBase} />
-            ) : activeTab === 'my-bookings' ? (
+            ) : activeTab === "my-bookings" ? (
               <MyBookings apiBase={apiBase} />
-            ) : activeTab === 'ticket' ? (
+            ) : activeTab === "ticket" ? (
               <TicketRequest apiBase={apiBase} />
-            ) : activeTab === 'my-tickets' ? (
+            ) : activeTab === "my-tickets" ? (
               <MyTickets apiBase={apiBase} />
             ) : (
               <NotificationPanel apiBase={apiBase} />
@@ -144,9 +172,16 @@ function UserDashboard({ user, apiBase, onLogout }) {
         </main>
       </div>
 
-      {sidebarOpen ? <button className="sidebar-backdrop" type="button" aria-label="Close menu" onClick={closeMobileMenu} /> : null}
+      {sidebarOpen ? (
+        <button
+          className="sidebar-backdrop"
+          type="button"
+          aria-label="Close menu"
+          onClick={closeMobileMenu}
+        />
+      ) : null}
     </div>
-  )
+  );
 }
 
-export default UserDashboard
+export default UserDashboard;

@@ -1,82 +1,86 @@
-import { useEffect, useState } from 'react'
-import './user-booking.css'
+import { useEffect, useState } from "react";
+import "./user-booking.css";
 
 const emptyForm = {
-  resourceId: '',
-  date: '',
-  startTime: '',
-  endTime: '',
-  purpose: '',
+  resourceId: "",
+  date: "",
+  startTime: "",
+  endTime: "",
+  purpose: "",
   expectedAttendees: 1,
-}
+};
 
 async function parseApiError(response, fallbackMessage) {
   try {
-    const data = await response.json()
-    if (data?.message) return data.message
-    if (data?.error) return data.error
+    const data = await response.json();
+    if (data?.message) return data.message;
+    if (data?.error) return data.error;
   } catch {
     // Ignore JSON parse errors and use fallback.
   }
-  return fallbackMessage
+  return fallbackMessage;
 }
 
 function BookingRequest({ apiBase }) {
-  const [form, setForm] = useState(emptyForm)
-  const [resources, setResources] = useState([])
-  const [loadingResources, setLoadingResources] = useState(false)
-  const [status, setStatus] = useState('')
-  const [error, setError] = useState('')
+  const [form, setForm] = useState(emptyForm);
+  const [resources, setResources] = useState([]);
+  const [loadingResources, setLoadingResources] = useState(false);
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadResources = async () => {
-      setLoadingResources(true)
+      setLoadingResources(true);
       try {
         const response = await fetch(`${apiBase}/api/resources`, {
-          credentials: 'include',
-        })
+          credentials: "include",
+        });
         if (!response.ok) {
-          throw new Error(await parseApiError(response, 'Failed to load resources'))
+          throw new Error(
+            await parseApiError(response, "Failed to load resources"),
+          );
         }
-        const data = await response.json()
-        setResources(data)
+        const data = await response.json();
+        setResources(data);
       } catch (err) {
-        setError(err.message || 'Failed to load resources')
+        setError(err.message || "Failed to load resources");
       } finally {
-        setLoadingResources(false)
+        setLoadingResources(false);
       }
-    }
-    loadResources()
-  }, [apiBase])
+    };
+    loadResources();
+  }, [apiBase]);
 
   const handleChange = (event) => {
-    const { name, value } = event.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
-    setError('')
-    setStatus('')
+    event.preventDefault();
+    setError("");
+    setStatus("");
     try {
       const response = await fetch(`${apiBase}/api/bookings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           ...form,
           expectedAttendees: Number(form.expectedAttendees),
         }),
-      })
+      });
       if (!response.ok) {
-        throw new Error(await parseApiError(response, 'Failed to submit booking'))
+        throw new Error(
+          await parseApiError(response, "Failed to submit booking"),
+        );
       }
-      setForm(emptyForm)
-      setStatus('Booking request submitted successfully.')
+      setForm(emptyForm);
+      setStatus("Booking request submitted successfully.");
     } catch (err) {
-      setError(err.message || 'Failed to submit booking')
+      setError(err.message || "Failed to submit booking");
     }
-  }
+  };
 
   return (
     <section className="user-booking">
@@ -97,7 +101,7 @@ function BookingRequest({ apiBase }) {
             required
           >
             <option value="">
-              {loadingResources ? 'Loading resources...' : 'Select a resource'}
+              {loadingResources ? "Loading resources..." : "Select a resource"}
             </option>
             {resources.map((resource) => (
               <option key={resource.id} value={resource.id}>
@@ -149,7 +153,7 @@ function BookingRequest({ apiBase }) {
         </button>
       </form>
     </section>
-  )
+  );
 }
 
-export default BookingRequest
+export default BookingRequest;

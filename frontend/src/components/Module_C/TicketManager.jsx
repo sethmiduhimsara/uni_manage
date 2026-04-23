@@ -198,66 +198,66 @@ function TicketManager({ apiBase }) {
 
       {!loading ? (
         <div className="table-card">
-        <table className="ticket-table">
-          <colgroup>
-            <col className="ticket-col ticket-col-ticket" />
-            <col className="ticket-col ticket-col-priority" />
-            <col className="ticket-col ticket-col-status" />
-            <col className="ticket-col ticket-col-assigned" />
-            <col className="ticket-col ticket-col-created" />
-            <col className="ticket-col ticket-col-action" />
-          </colgroup>
-          <thead>
-            <tr>
-              <th>Ticket</th>
-              <th>Priority</th>
-              <th>Status</th>
-              <th>Assigned</th>
-              <th>Created by</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.length === 0 ? (
+          <table className="ticket-table">
+            <colgroup>
+              <col className="ticket-col ticket-col-ticket" />
+              <col className="ticket-col ticket-col-priority" />
+              <col className="ticket-col ticket-col-status" />
+              <col className="ticket-col ticket-col-assigned" />
+              <col className="ticket-col ticket-col-created" />
+              <col className="ticket-col ticket-col-action" />
+            </colgroup>
+            <thead>
               <tr>
-                <td colSpan="6">No tickets found.</td>
+                <th>Ticket</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Assigned</th>
+                <th>Created by</th>
+                <th>Action</th>
               </tr>
-            ) : (
-              tickets.map((ticket) => (
-                <tr key={ticket.id}>
-                  <td>
-                    <strong>{ticket.category}</strong>
-                    <span className="muted">
-                      {ticket.resourceId || ticket.location}
-                    </span>
-                  </td>
-                  <td>{ticket.priority}</td>
-                  <td>{ticket.status}</td>
-                  <td>{ticket.assignedToEmail || "Unassigned"}</td>
-                  <td>{ticket.createdByEmail}</td>
-                  <td>
-                    <div className="action-row">
-                      <button
-                        className="btn ghost"
-                        type="button"
-                        onClick={() => openAction(ticket.id, "assign")}
-                      >
-                        Assign
-                      </button>
-                      <button
-                        className="btn primary"
-                        type="button"
-                        onClick={() => openAction(ticket.id, "status")}
-                      >
-                        Update status
-                      </button>
-                    </div>
-                  </td>
+            </thead>
+            <tbody>
+              {tickets.length === 0 ? (
+                <tr>
+                  <td colSpan="6">No tickets found.</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                tickets.map((ticket) => (
+                  <tr key={ticket.id}>
+                    <td>
+                      <strong>{ticket.category}</strong>
+                      <span className="muted">
+                        {ticket.resourceId || ticket.location}
+                      </span>
+                    </td>
+                    <td>{ticket.priority}</td>
+                    <td>{ticket.status}</td>
+                    <td>{ticket.assignedToEmail || "Unassigned"}</td>
+                    <td>{ticket.createdByEmail}</td>
+                    <td>
+                      <div className="action-row">
+                        <button
+                          className="btn ghost"
+                          type="button"
+                          onClick={() => openAction(ticket.id, "assign")}
+                        >
+                          Assign
+                        </button>
+                        <button
+                          className="btn primary"
+                          type="button"
+                          onClick={() => openAction(ticket.id, "status")}
+                        >
+                          Update status
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       ) : null}
 

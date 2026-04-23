@@ -64,36 +64,36 @@ function MyTickets({ apiBase }) {
       ) : null}
 
       {!loading ? (
-      <div className="table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Priority</th>
-              <th>Status</th>
-              <th>Assigned</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.length === 0 ? (
+        <div className="table-card">
+          <table>
+            <thead>
               <tr>
-                <td colSpan="4">
-                  No tickets yet. Submit an incident from Report Issue.
-                </td>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Assigned</th>
               </tr>
-            ) : (
-              tickets.map((ticket) => (
-                <tr key={ticket.id}>
-                  <td>{ticket.category}</td>
-                  <td>{ticket.priority}</td>
-                  <td>{ticket.status}</td>
-                  <td>{ticket.assignedToEmail || "Unassigned"}</td>
+            </thead>
+            <tbody>
+              {tickets.length === 0 ? (
+                <tr>
+                  <td colSpan="4">
+                    No tickets yet. Submit an incident from Report Issue.
+                  </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                tickets.map((ticket) => (
+                  <tr key={ticket.id}>
+                    <td>{ticket.category}</td>
+                    <td>{ticket.priority}</td>
+                    <td>{ticket.status}</td>
+                    <td>{ticket.assignedToEmail || "Unassigned"}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       ) : null}
     </section>
   );
