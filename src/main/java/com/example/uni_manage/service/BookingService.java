@@ -160,6 +160,56 @@ public class BookingService {
         return saved;
     }
 
+    public void deleteBooking(String id, String requesterEmail) {
+        Booking booking = getBooking(id);
+        if (!booking.getUserEmail().equalsIgnoreCase(requesterEmail)) {
+            throw new ForbiddenOperationException("You are not allowed to delete this booking");
+        }
+        // Allow deleting pending or rejected bookings. 
+        // Approved bookings should be cancelled instead, but we'll allow delete if that's the intent.
+        bookingRepository.delete(booking);
+    }
+
+    public Booking updateBooking(String id, BookingRequest request, String requesterEmail) {
+        Booking booking = getBooking(id);
+        if (!booking.getUserEmail().equalsIgnoreCase(requesterEmail)) {
+            throw new ForbiddenOperationException("You are not allowed to update this booking");
+        }
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new BadRequestException("Only PENDING bookings can be updated");
+        }
+
+        validateTimeRange(request.startTime(), request.endTime());
+        ensureResourceExists(request.resourceId());
+        
+        // Ensure no conflicts, excluding this booking itself
+        ensureNoConflictsExcluding(request.resourceId(), request.date(), request.startTime(), request.endTime(), id);
+
+        booking.setResourceId(request.resourceId());
+        booking.setDate(request.date());
+        booking.setStartTime(request.startTime());
+        booking.setEndTime(request.endTime());
+        booking.setPurpose(request.purpose());
+        booking.setExpectedAttendees(request.expectedAttendees());
+        booking.setUpdatedAt(Instant.now());
+        
+        return bookingRepository.save(booking);
+    }
+
+    private void ensureNoConflictsExcluding(String resourceId, LocalDate date, LocalTime start, LocalTime end, String excludeId) {
+        List<Booking> existing = bookingRepository.findByResourceIdAndDateAndStatusIn(
+                resourceId,
+                date,
+                CONFLICT_STATUSES
+        );
+        for (Booking booking : existing) {
+            if (booking.getId().equals(excludeId)) continue;
+            if (isOverlapping(start, end, booking.getStartTime(), booking.getEndTime())) {
+                throw new BookingConflictException("Booking conflicts with existing schedule");
+            }
+        }
+    }
+
     private Booking getBooking(String id) {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + id));
