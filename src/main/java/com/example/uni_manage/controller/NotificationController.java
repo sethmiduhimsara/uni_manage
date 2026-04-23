@@ -40,6 +40,13 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.markAllAsRead(getEmail(user)));
     }
 
+    @DeleteMapping
+    public ResponseEntity<Long> clearAll(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal OAuth2User user
+    ) {
+        return ResponseEntity.ok(notificationService.clearAll(getEmail(user)));
+    }
+
     private String getEmail(OAuth2User user) {
         if (user == null) {
             throw new ForbiddenOperationException("Authentication required");

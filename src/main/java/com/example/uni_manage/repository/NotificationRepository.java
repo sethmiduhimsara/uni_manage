@@ -8,4 +8,5 @@ import java.util.List;
 public interface NotificationRepository extends MongoRepository<Notification, String> {
     List<Notification> findByUserEmailOrderByCreatedAtDesc(String userEmail);
     List<Notification> findByUserEmailAndReadFalseOrderByCreatedAtDesc(String userEmail);
+    long deleteByUserEmail(String userEmail);
 }
