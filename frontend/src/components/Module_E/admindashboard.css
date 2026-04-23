@@ -168,6 +168,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  justify-self: end;
 }
 
 .profile-chip {
@@ -190,9 +191,9 @@
 }
 
 .logout {
-  border: 1px solid rgba(15, 31, 53, 0.18);
-  background: #fff;
-  color: var(--text-strong);
+  border: 1px solid rgba(185, 28, 28, 0.45);
+  background: #ef4444;
+  color: #fff;
   padding: 9px 14px;
   border-radius: 999px;
   cursor: pointer;
@@ -201,7 +202,7 @@
 
 .logout:hover {
   transform: translateY(-1px);
-  background: #f5f8fc;
+  background: #dc2626;
 }
 
 .menu-toggle {
