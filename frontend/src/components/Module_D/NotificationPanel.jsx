@@ -13,7 +13,7 @@ async function parseApiError(response, fallbackMessage) {
   return fallbackMessage;
 }
 
-function NotificationPanel({ apiBase }) {
+function NotificationPanel({ apiBase, onUnreadCountChange }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,6 +34,12 @@ function NotificationPanel({ apiBase }) {
       }
       const data = await response.json();
       setNotifications(data);
+      if (onUnreadCountChange) {
+        const unreadCount = Array.isArray(data)
+          ? data.reduce((total, item) => (item.read ? total : total + 1), 0)
+          : 0;
+        onUnreadCountChange(unreadCount);
+      }
     } catch (err) {
       setError(err.message || "Failed to load notifications");
     } finally {

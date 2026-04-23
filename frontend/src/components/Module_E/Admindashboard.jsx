@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ResourceManager from "../Module_A/ResourceManager";
 import BookingManager from "../Module_B/BookingManager";
 import TicketManager from "../Module_C/TicketManager";
@@ -54,6 +54,7 @@ const KPI_BY_MODULE = {
 function Admindashboard({ user, apiBase, onLogout }) {
   const [activeModule, setActiveModule] = useState("module-a");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const subtitle = useMemo(() => {
     return user?.email || "admin";
@@ -70,6 +71,30 @@ function Admindashboard({ user, apiBase, onLogout }) {
     setActiveModule(moduleId);
     closeMobileMenu();
   };
+
+  const loadUnreadCount = async () => {
+    try {
+      const response = await fetch(
+        `${apiBase}/api/notifications?unreadOnly=true`,
+        { credentials: "include" },
+      );
+      if (!response.ok) {
+        return;
+      }
+      const data = await response.json();
+      setUnreadCount(Array.isArray(data) ? data.length : 0);
+    } catch {
+      // Ignore badge refresh errors.
+    }
+  };
+
+  useEffect(() => {
+    loadUnreadCount();
+    const intervalId = setInterval(loadUnreadCount, 30000);
+    return () => clearInterval(intervalId);
+  }, [apiBase]);
+
+  const badgeText = unreadCount > 9 ? "9+" : String(unreadCount);
 
   return (
     <div className={`admin-shell ${sidebarOpen ? "sidebar-open" : ""}`}>
@@ -92,6 +117,14 @@ function Admindashboard({ user, apiBase, onLogout }) {
               onClick={() => handleModuleSelect(item.id)}
             >
               <span className="module-label">{item.label}</span>
+              {item.id === "module-d" && unreadCount > 0 ? (
+                <span
+                  className="notif-badge"
+                  aria-label={`${unreadCount} unread notifications`}
+                >
+                  {badgeText}
+                </span>
+              ) : null}
             </button>
           ))}
         </nav>
@@ -154,7 +187,10 @@ function Admindashboard({ user, apiBase, onLogout }) {
             ) : activeModule === "module-c" ? (
               <TicketManager apiBase={apiBase} />
             ) : activeModule === "module-d" ? (
-              <NotificationPanel apiBase={apiBase} />
+              <NotificationPanel
+                apiBase={apiBase}
+                onUnreadCountChange={setUnreadCount}
+              />
             ) : (
               <div className="placeholder">
                 <p>Module is coming next.</p>

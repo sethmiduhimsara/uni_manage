@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BookingRequest from "../Module_B/BookingRequest";
 import MyBookings from "../Module_B/MyBookings";
 import TicketRequest from "../Module_C/TicketRequest";
@@ -65,6 +65,7 @@ const KPI_BY_TAB = {
 function UserDashboard({ user, apiBase, onLogout }) {
   const [activeTab, setActiveTab] = useState("book");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const subtitle = useMemo(() => {
     return user?.email || "user";
@@ -81,6 +82,30 @@ function UserDashboard({ user, apiBase, onLogout }) {
     setActiveTab(tabId);
     closeMobileMenu();
   };
+
+  const loadUnreadCount = async () => {
+    try {
+      const response = await fetch(
+        `${apiBase}/api/notifications?unreadOnly=true`,
+        { credentials: "include" },
+      );
+      if (!response.ok) {
+        return;
+      }
+      const data = await response.json();
+      setUnreadCount(Array.isArray(data) ? data.length : 0);
+    } catch {
+      // Ignore badge refresh errors.
+    }
+  };
+
+  useEffect(() => {
+    loadUnreadCount();
+    const intervalId = setInterval(loadUnreadCount, 30000);
+    return () => clearInterval(intervalId);
+  }, [apiBase]);
+
+  const badgeText = unreadCount > 9 ? "9+" : String(unreadCount);
 
   return (
     <div className={`user-shell ${sidebarOpen ? "sidebar-open" : ""}`}>
@@ -103,6 +128,14 @@ function UserDashboard({ user, apiBase, onLogout }) {
               onClick={() => handleTabSelect(tab.id)}
             >
               <span className="tab-label">{tab.label}</span>
+              {tab.id === "notifications" && unreadCount > 0 ? (
+                <span
+                  className="notif-badge"
+                  aria-label={`${unreadCount} unread notifications`}
+                >
+                  {badgeText}
+                </span>
+              ) : null}
             </button>
           ))}
         </nav>
@@ -166,7 +199,10 @@ function UserDashboard({ user, apiBase, onLogout }) {
             ) : activeTab === "my-tickets" ? (
               <MyTickets apiBase={apiBase} />
             ) : (
-              <NotificationPanel apiBase={apiBase} />
+              <NotificationPanel
+                apiBase={apiBase}
+                onUnreadCountChange={setUnreadCount}
+              />
             )}
           </div>
         </main>
