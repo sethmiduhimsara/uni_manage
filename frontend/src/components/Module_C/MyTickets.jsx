@@ -1,44 +1,46 @@
-import { useEffect, useState } from 'react'
-import './user-ticket.css'
+import { useEffect, useState } from "react";
+import "./user-ticket.css";
 
 async function parseApiError(response, fallbackMessage) {
   try {
-    const data = await response.json()
-    if (data?.message) return data.message
-    if (data?.error) return data.error
+    const data = await response.json();
+    if (data?.message) return data.message;
+    if (data?.error) return data.error;
   } catch {
     // Fall back to generic message when API body is not JSON.
   }
-  return fallbackMessage
+  return fallbackMessage;
 }
 
 function MyTickets({ apiBase }) {
-  const [tickets, setTickets] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const loadTickets = async () => {
-    setLoading(true)
-    setError('')
+    setLoading(true);
+    setError("");
     try {
       const response = await fetch(`${apiBase}/api/tickets/me`, {
-        credentials: 'include',
-      })
+        credentials: "include",
+      });
       if (!response.ok) {
-        throw new Error(await parseApiError(response, 'Failed to load tickets'))
+        throw new Error(
+          await parseApiError(response, "Failed to load tickets"),
+        );
       }
-      const data = await response.json()
-      setTickets(data)
+      const data = await response.json();
+      setTickets(data);
     } catch (err) {
-      setError(err.message || 'Failed to load tickets')
+      setError(err.message || "Failed to load tickets");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadTickets()
-  }, [apiBase])
+    loadTickets();
+  }, [apiBase]);
 
   return (
     <section className="user-ticket">
@@ -69,7 +71,9 @@ function MyTickets({ apiBase }) {
           <tbody>
             {tickets.length === 0 ? (
               <tr>
-                <td colSpan="4">No tickets yet. Submit an incident from Report Issue.</td>
+                <td colSpan="4">
+                  No tickets yet. Submit an incident from Report Issue.
+                </td>
               </tr>
             ) : (
               tickets.map((ticket) => (
@@ -77,7 +81,7 @@ function MyTickets({ apiBase }) {
                   <td>{ticket.category}</td>
                   <td>{ticket.priority}</td>
                   <td>{ticket.status}</td>
-                  <td>{ticket.assignedToEmail || 'Unassigned'}</td>
+                  <td>{ticket.assignedToEmail || "Unassigned"}</td>
                 </tr>
               ))
             )}
@@ -85,7 +89,7 @@ function MyTickets({ apiBase }) {
         </table>
       </div>
     </section>
-  )
+  );
 }
 
-export default MyTickets
+export default MyTickets;

@@ -1,75 +1,75 @@
-import { useEffect, useState } from 'react'
-import './user-ticket.css'
+import { useEffect, useState } from "react";
+import "./user-ticket.css";
 
 const emptyForm = {
-  resourceId: '',
-  location: '',
-  category: '',
-  description: '',
-  priority: 'MEDIUM',
-  contactDetails: '',
-}
+  resourceId: "",
+  location: "",
+  category: "",
+  description: "",
+  priority: "MEDIUM",
+  contactDetails: "",
+};
 
 async function parseApiError(response, fallbackMessage) {
   try {
-    const data = await response.json()
-    if (data?.message) return data.message
-    if (data?.error) return data.error
+    const data = await response.json();
+    if (data?.message) return data.message;
+    if (data?.error) return data.error;
   } catch {
     // Fall back to generic message when API body is not JSON.
   }
-  return fallbackMessage
+  return fallbackMessage;
 }
 
 function TicketRequest({ apiBase }) {
-  const [form, setForm] = useState(emptyForm)
-  const [files, setFiles] = useState([])
-  const [resources, setResources] = useState([])
-  const [loadingResources, setLoadingResources] = useState(false)
-  const [status, setStatus] = useState('')
-  const [error, setError] = useState('')
+  const [form, setForm] = useState(emptyForm);
+  const [files, setFiles] = useState([]);
+  const [resources, setResources] = useState([]);
+  const [loadingResources, setLoadingResources] = useState(false);
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadResources = async () => {
-      setLoadingResources(true)
+      setLoadingResources(true);
       try {
         const response = await fetch(`${apiBase}/api/resources`, {
-          credentials: 'include',
-        })
+          credentials: "include",
+        });
         if (!response.ok) {
-          throw new Error('Failed to load resources')
+          throw new Error("Failed to load resources");
         }
-        const data = await response.json()
-        setResources(data)
+        const data = await response.json();
+        setResources(data);
       } catch (err) {
-        setError(err.message || 'Failed to load resources')
+        setError(err.message || "Failed to load resources");
       } finally {
-        setLoadingResources(false)
+        setLoadingResources(false);
       }
-    }
-    loadResources()
-  }, [apiBase])
+    };
+    loadResources();
+  }, [apiBase]);
 
   const handleChange = (event) => {
-    const { name, value } = event.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleFiles = (event) => {
-    const selected = Array.from(event.target.files || [])
+    const selected = Array.from(event.target.files || []);
     if (selected.length > 3) {
-      setError('You can upload up to 3 images only.')
-      setFiles(selected.slice(0, 3))
-      return
+      setError("You can upload up to 3 images only.");
+      setFiles(selected.slice(0, 3));
+      return;
     }
-    setError('')
-    setFiles(selected)
-  }
+    setError("");
+    setFiles(selected);
+  };
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
-    setError('')
-    setStatus('')
+    event.preventDefault();
+    setError("");
+    setStatus("");
     try {
       const ticketPayload = {
         resourceId: form.resourceId || null,
@@ -78,31 +78,33 @@ function TicketRequest({ apiBase }) {
         description: form.description,
         priority: form.priority,
         contactDetails: form.contactDetails,
-      }
-      const body = new FormData()
+      };
+      const body = new FormData();
       body.append(
-        'ticket',
+        "ticket",
         new Blob([JSON.stringify(ticketPayload)], {
-          type: 'application/json',
-        })
-      )
-      files.slice(0, 3).forEach((file) => body.append('files', file))
+          type: "application/json",
+        }),
+      );
+      files.slice(0, 3).forEach((file) => body.append("files", file));
 
       const response = await fetch(`${apiBase}/api/tickets`, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         body,
-      })
+      });
       if (!response.ok) {
-        throw new Error(await parseApiError(response, 'Failed to submit ticket'))
+        throw new Error(
+          await parseApiError(response, "Failed to submit ticket"),
+        );
       }
-      setForm(emptyForm)
-      setFiles([])
-      setStatus('Ticket submitted successfully.')
+      setForm(emptyForm);
+      setFiles([]);
+      setStatus("Ticket submitted successfully.");
     } catch (err) {
-      setError(err.message || 'Failed to submit ticket')
+      setError(err.message || "Failed to submit ticket");
     }
-  }
+  };
 
   return (
     <section className="user-ticket">
@@ -122,7 +124,9 @@ function TicketRequest({ apiBase }) {
             onChange={handleChange}
           >
             <option value="">
-              {loadingResources ? 'Loading resources...' : 'Select resource (optional)'}
+              {loadingResources
+                ? "Loading resources..."
+                : "Select resource (optional)"}
             </option>
             {resources.map((resource) => (
               <option key={resource.id} value={resource.id}>
@@ -173,7 +177,7 @@ function TicketRequest({ apiBase }) {
         </button>
       </form>
     </section>
-  )
+  );
 }
 
-export default TicketRequest
+export default TicketRequest;
