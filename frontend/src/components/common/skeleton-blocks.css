@@ -1,0 +1,27 @@
+.skeleton-grid {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.skeleton-grid.compact {
+  gap: 8px;
+}
+
+.skeleton-block {
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(205, 216, 232, 0.42) 0%, rgba(235, 242, 252, 0.92) 50%, rgba(205, 216, 232, 0.42) 100%);
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.15s ease-in-out infinite;
+  border: 1px solid rgba(170, 184, 205, 0.25);
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 180% 0;
+  }
+  100% {
+    background-position: -40% 0;
+  }
+}

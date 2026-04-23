@@ -1,74 +1,90 @@
-import { useEffect, useMemo, useState } from 'react'
-import './resource-manager.css'
+import { useEffect, useMemo, useState } from "react";
+import "./resource-manager.css";
+import SkeletonBlocks from "../common/SkeletonBlocks";
 
 const emptyForm = {
-  name: '',
-  type: 'LECTURE_HALL',
-  location: '',
+  name: "",
+  type: "LECTURE_HALL",
+  location: "",
   capacity: 1,
-  status: 'ACTIVE',
-  description: '',
+  status: "ACTIVE",
+  description: "",
+};
+
+async function parseApiError(response, fallbackMessage) {
+  try {
+    const data = await response.json();
+    if (data?.message) return data.message;
+    if (data?.error) return data.error;
+  } catch {
+    // Ignore JSON parse errors and use fallback.
+  }
+  return fallbackMessage;
 }
 
 function ResourceManager({ apiBase }) {
-  const [resources, setResources] = useState([])
+  const [resources, setResources] = useState([]);
   const [filters, setFilters] = useState({
-    type: '',
-    location: '',
-    status: '',
-    minCapacity: '',
-  })
-  const [form, setForm] = useState(emptyForm)
-  const [editingId, setEditingId] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+    type: "",
+    location: "",
+    status: "",
+    minCapacity: "",
+  });
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
 
   const filterQuery = useMemo(() => {
-    const params = new URLSearchParams()
-    if (filters.type) params.set('type', filters.type)
-    if (filters.location) params.set('location', filters.location)
-    if (filters.status) params.set('status', filters.status)
-    if (filters.minCapacity) params.set('minCapacity', filters.minCapacity)
-    return params.toString()
-  }, [filters])
+    const params = new URLSearchParams();
+    if (filters.type) params.set("type", filters.type);
+    if (filters.location) params.set("location", filters.location);
+    if (filters.status) params.set("status", filters.status);
+    if (filters.minCapacity) params.set("minCapacity", filters.minCapacity);
+    return params.toString();
+  }, [filters]);
 
   const loadResources = async () => {
-    setLoading(true)
-    setError('')
+    setLoading(true);
+    setError("");
     try {
       const url = filterQuery
         ? `${apiBase}/api/resources/filter?${filterQuery}`
-        : `${apiBase}/api/resources`
-      const response = await fetch(url, { credentials: 'include' })
+        : `${apiBase}/api/resources`;
+      const response = await fetch(url, { credentials: "include" });
       if (!response.ok) {
-        throw new Error('Failed to load resources')
+        throw new Error(
+          await parseApiError(response, "Failed to load resources"),
+        );
       }
-      const data = await response.json()
-      setResources(data)
+      const data = await response.json();
+      setResources(data);
     } catch (err) {
-      setError(err.message || 'Failed to load resources')
+      setError(err.message || "Failed to load resources");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadResources()
-  }, [filterQuery])
+    loadResources();
+  }, [filterQuery]);
 
   const handleFilterChange = (event) => {
-    const { name, value } = event.target
-    setFilters((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = event.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleFormChange = (event) => {
-    const { name, value } = event.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
-    setError('')
+    event.preventDefault();
+    setError("");
+    setStatus("");
     const payload = {
       name: form.name,
       type: form.type,
@@ -76,65 +92,80 @@ function ResourceManager({ apiBase }) {
       capacity: Number(form.capacity),
       status: form.status,
       description: form.description,
-    }
+    };
 
     try {
       const url = editingId
         ? `${apiBase}/api/resources/${editingId}`
-        : `${apiBase}/api/resources`
-      const method = editingId ? 'PUT' : 'POST'
+        : `${apiBase}/api/resources`;
+      const method = editingId ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
-      })
+      });
       if (!response.ok) {
-        throw new Error(`Failed to ${editingId ? 'update' : 'create'} resource`)
+        throw new Error(
+          await parseApiError(
+            response,
+            `Failed to ${editingId ? "update" : "create"} resource`,
+          ),
+        );
       }
-      setForm(emptyForm)
-      setEditingId(null)
-      await loadResources()
+      setForm(emptyForm);
+      setEditingId(null);
+      setStatus(
+        editingId
+          ? "Resource updated successfully."
+          : "Resource created successfully.",
+      );
+      await loadResources();
     } catch (err) {
-      setError(err.message || 'Action failed')
+      setError(err.message || "Action failed");
     }
-  }
+  };
 
   const handleEdit = (resource) => {
-    setEditingId(resource.id)
+    setEditingId(resource.id);
     setForm({
       name: resource.name,
       type: resource.type,
       location: resource.location,
       capacity: resource.capacity,
       status: resource.status,
-      description: resource.description || '',
-    })
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
-  }
+      description: resource.description || "",
+    });
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this resource?')) return
-    setError('')
+    if (!window.confirm("Are you sure you want to delete this resource?"))
+      return;
+    setError("");
+    setStatus("");
     try {
       const response = await fetch(`${apiBase}/api/resources/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      })
+        method: "DELETE",
+        credentials: "include",
+      });
       if (!response.ok) {
-        throw new Error('Failed to delete resource')
+        throw new Error(
+          await parseApiError(response, "Failed to delete resource"),
+        );
       }
-      await loadResources()
+      setStatus("Resource deleted successfully.");
+      await loadResources();
     } catch (err) {
-      setError(err.message || 'Delete failed')
+      setError(err.message || "Delete failed");
     }
-  }
+  };
 
   const cancelEdit = () => {
-    setEditingId(null)
-    setForm(emptyForm)
-  }
+    setEditingId(null);
+    setForm(emptyForm);
+  };
 
   return (
     <section className="resource-manager">
@@ -142,7 +173,9 @@ function ResourceManager({ apiBase }) {
         <div>
           <p className="eyebrow">Module A</p>
           <h1>Facilities & Assets Catalogue</h1>
-          <p className="lead">Manage rooms, labs, and equipment availability.</p>
+          <p className="lead">
+            Manage rooms, labs, and equipment availability.
+          </p>
         </div>
         <button className="button ghost" onClick={loadResources}>
           Refresh
@@ -183,56 +216,74 @@ function ResourceManager({ apiBase }) {
       </div>
 
       {error ? <p className="error">{error}</p> : null}
-      {loading ? <p className="status">Loading resources...</p> : null}
+      {status ? <p className="status success">{status}</p> : null}
 
-      <div className="table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Location</th>
-              <th>Capacity</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {resources.length === 0 ? (
+      {loading ? (
+        <div className="table-card">
+          <SkeletonBlocks rows={5} columns={1} compact />
+        </div>
+      ) : null}
+
+      {!loading ? (
+        <div className="table-card">
+          <table>
+            <thead>
               <tr>
-                <td colSpan="6">No resources yet.</td>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Capacity</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
-            ) : (
-              resources.map((resource) => (
-                <tr key={resource.id}>
-                  <td>{resource.name}</td>
-                  <td>{resource.type}</td>
-                  <td>{resource.location}</td>
-                  <td>{resource.capacity}</td>
-                  <td>
-                    <span className={`badge ${resource.status.toLowerCase()}`}>
-                      {resource.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="actions">
-                      <button className="action-btn edit" onClick={() => handleEdit(resource)} title="Edit">
-                        ✎
-                      </button>
-                      <button className="action-btn delete" onClick={() => handleDelete(resource.id)} title="Delete">
-                        ✕
-                      </button>
-                    </div>
-                  </td>
+            </thead>
+            <tbody>
+              {resources.length === 0 ? (
+                <tr>
+                  <td colSpan="6">No resources yet.</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                resources.map((resource) => (
+                  <tr key={resource.id}>
+                    <td>{resource.name}</td>
+                    <td>{resource.type}</td>
+                    <td>{resource.location}</td>
+                    <td>{resource.capacity}</td>
+                    <td>
+                      <span
+                        className={`badge ${resource.status.toLowerCase()}`}
+                      >
+                        {resource.status}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="actions">
+                        <button
+                          className="action-btn edit"
+                          onClick={() => handleEdit(resource)}
+                          title="Edit"
+                        >
+                          ✎
+                        </button>
+                        <button
+                          className="action-btn delete"
+                          onClick={() => handleDelete(resource.id)}
+                          title="Delete"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
 
       <form className="form-card" onSubmit={handleSubmit}>
-        <h2>{editingId ? 'Update resource' : 'Create resource'}</h2>
+        <h2>{editingId ? "Update resource" : "Create resource"}</h2>
         <div className="grid">
           <input
             name="name"
@@ -277,7 +328,7 @@ function ResourceManager({ apiBase }) {
         />
         <div className="form-actions">
           <button className="button primary" type="submit">
-            {editingId ? 'Update Resource' : 'Save Resource'}
+            {editingId ? "Update Resource" : "Save Resource"}
           </button>
           {editingId && (
             <button className="button ghost" type="button" onClick={cancelEdit}>
@@ -287,7 +338,7 @@ function ResourceManager({ apiBase }) {
         </div>
       </form>
     </section>
-  )
+  );
 }
 
-export default ResourceManager
+export default ResourceManager;
