@@ -205,14 +205,14 @@ function BookingManager({ apiBase }) {
                       {booking.status === "PENDING" ? (
                         <div className="action-row">
                           <button
-                            className="btn primary"
+                            className="btn btn-approve sm"
                             type="button"
                             onClick={() => openAction(booking.id, "approve")}
                           >
                             Approve
                           </button>
                           <button
-                            className="btn danger"
+                            className="btn btn-reject sm"
                             type="button"
                             onClick={() => openAction(booking.id, "reject")}
                           >
