@@ -13,7 +13,7 @@ async function parseApiError(response, fallbackMessage) {
   return fallbackMessage;
 }
 
-function UserResourceView({ apiBase }) {
+function UserResourceView({ apiBase, onNavigateToBooking }) {
   const [resources, setResources] = useState([]);
   const [filters, setFilters] = useState({
     type: "",
@@ -155,7 +155,19 @@ function UserResourceView({ apiBase }) {
                 </div>
 
                 <div className="row-details">
-                  <p className="description-text">{resource.description || "Detailed facility information not available."}</p>
+                  <p className="description-text">
+                    {resource.description ||
+                      "Detailed facility information not available."}
+                  </p>
+                </div>
+
+                <div className="row-actions">
+                  <button
+                    className="button primary sm"
+                    onClick={() => onNavigateToBooking(resource.id)}
+                  >
+                    Request Booking
+                  </button>
                 </div>
               </article>
             ))

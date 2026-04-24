@@ -134,11 +134,18 @@
   border: 1px solid #e2e8f0;
   padding: 1.5rem;
   display: grid;
-  grid-template-columns: 2.5fr 1.5fr 3fr;
+  grid-template-columns: 2fr 1.2fr 3fr min-content;
   align-items: center;
-  gap: 2.5rem;
+  gap: 1.5rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.row-actions {
+  display: flex;
+  justify-content: center;
+  padding-left: 1.5rem;
+  border-left: 1px solid #f1f5f9;
 }
 
 .resource-row:hover {
@@ -276,26 +283,59 @@
   font-size: 0.9rem;
   color: #64748b;
   line-height: 1.6;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+}
+
+.button.primary.sm {
+  white-space: nowrap;
+  background: linear-gradient(135deg, #187b86, #0f6370);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(24, 123, 134, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: fit-content;
+}
+
+.button.primary.sm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(24, 123, 134, 0.35);
+  background: linear-gradient(135deg, #1d909d, #127584);
+}
+
+.button.primary.sm:active {
+  transform: translateY(0);
 }
 
 @media (max-width: 1200px) {
   .resource-row {
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
   }
 
   .row-details {
     grid-column: span 2;
-    padding-left: 0;
-    padding-top: 1.5rem;
+    padding: 1rem 0;
     border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
   }
 
   .row-meta {
     border-right: none;
+    justify-content: flex-start;
+  }
+
+  .row-actions {
+    grid-column: span 2;
+    border: none;
+    padding: 0;
+    justify-content: center;
   }
 }
 

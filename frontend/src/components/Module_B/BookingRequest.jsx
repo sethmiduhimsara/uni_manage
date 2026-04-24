@@ -21,12 +21,19 @@ async function parseApiError(response, fallbackMessage) {
   return fallbackMessage;
 }
 
-function BookingRequest({ apiBase }) {
+function BookingRequest({ apiBase, initialResourceId, onClearPreselect }) {
   const [form, setForm] = useState(emptyForm);
   const [resources, setResources] = useState([]);
   const [loadingResources, setLoadingResources] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (initialResourceId) {
+      setForm((prev) => ({ ...prev, resourceId: initialResourceId }));
+      onClearPreselect();
+    }
+  }, [initialResourceId, onClearPreselect]);
 
   useEffect(() => {
     const loadResources = async () => {
