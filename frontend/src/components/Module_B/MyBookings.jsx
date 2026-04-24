@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
 import "./user-booking.css";
 import SkeletonBlocks from "../common/SkeletonBlocks";
 
@@ -19,6 +20,7 @@ function MyBookings({ apiBase }) {
   const [error, setError] = useState("");
   const [resources, setResources] = useState([]);
   const [editingBooking, setEditingBooking] = useState(null);
+  const [viewingQr, setViewingQr] = useState(null);
 
   const loadBookings = async () => {
     setLoading(true);
@@ -187,6 +189,13 @@ function MyBookings({ apiBase }) {
                     <td>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button
+                          className="btn ghost sm"
+                          onClick={() => setViewingQr(booking)}
+                          title="View QR Code"
+                        >
+                          QR
+                        </button>
+                        <button
                           className="btn btn-edit sm"
                           onClick={() => setEditingBooking(booking)}
                           disabled={booking.status !== "PENDING"}
@@ -295,6 +304,43 @@ function MyBookings({ apiBase }) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {viewingQr && (
+        <div className="modal-overlay" onClick={() => setViewingQr(null)}>
+          <div className="modal-content qr-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="qr-header">
+              <h2>Booking QR Code</h2>
+              <button className="close-btn" onClick={() => setViewingQr(null)}>&times;</button>
+            </div>
+            <div className="qr-body">
+              <div className="qr-container">
+                <QRCodeCanvas
+                  value={JSON.stringify({
+                    id: viewingQr.id,
+                    resource: viewingQr.resourceName,
+                    date: viewingQr.date,
+                    time: `${viewingQr.startTime} - ${viewingQr.endTime}`,
+                    user: viewingQr.userEmail,
+                    status: viewingQr.status
+                  })}
+                  size={256}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+              <div className="qr-details">
+                <p><strong>Resource:</strong> {viewingQr.resourceName}</p>
+                <p><strong>Date:</strong> {viewingQr.date}</p>
+                <p><strong>Time:</strong> {viewingQr.startTime} - {viewingQr.endTime}</p>
+                <p className={`status-text ${viewingQr.status.toLowerCase()}`}>{viewingQr.status}</p>
+              </div>
+            </div>
+            <div className="qr-footer">
+              <p>Scan this code to verify your booking at the facility.</p>
+            </div>
           </div>
         </div>
       )}
