@@ -105,6 +105,10 @@ function UserDashboard({ user, apiBase, onLogout }) {
     return () => clearInterval(intervalId);
   }, [apiBase]);
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const badgeText = unreadCount > 9 ? "9+" : String(unreadCount);
 
   return (
