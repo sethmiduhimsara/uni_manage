@@ -42,7 +42,8 @@
   border-radius: 22px;
   padding: 16px;
   box-shadow: var(--shadow-soft);
-  overflow-x: auto;
+  overflow: auto;
+  max-height: 310px;
   border: 1px solid var(--border-soft);
 }
 
@@ -64,6 +65,12 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  position: sticky;
+  top: -16px;
+  background: white;
+  z-index: 10;
+  padding-top: 16px;
+  padding-bottom: 12px;
 }
 
 .action-row {
