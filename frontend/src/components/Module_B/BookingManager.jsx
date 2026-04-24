@@ -194,7 +194,7 @@ function BookingManager({ apiBase }) {
               ) : (
                 bookings.map((booking) => (
                   <tr key={booking.id}>
-                    <td>{booking.resourceId}</td>
+                    <td>{booking.resourceName || booking.resourceId}</td>
                     <td>{booking.date}</td>
                     <td>
                       {booking.startTime} - {booking.endTime}
