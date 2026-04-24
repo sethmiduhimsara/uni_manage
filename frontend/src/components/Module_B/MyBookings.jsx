@@ -187,14 +187,14 @@ function MyBookings({ apiBase }) {
                     <td>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button
-                          className="btn ghost sm"
+                          className="btn btn-edit sm"
                           onClick={() => setEditingBooking(booking)}
                           disabled={booking.status !== "PENDING"}
                         >
                           Edit
                         </button>
                         <button
-                          className="btn ghost sm danger"
+                          className="btn btn-delete sm"
                           onClick={() => handleDelete(booking.id)}
                         >
                           Delete
