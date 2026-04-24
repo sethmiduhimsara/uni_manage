@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
 import "./booking-manager.css";
 import SkeletonBlocks from "../common/SkeletonBlocks";
 
@@ -27,6 +28,7 @@ function BookingManager({ apiBase }) {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [action, setAction] = useState({ id: "", type: "", reason: "" });
+  const [viewingQr, setViewingQr] = useState(null);
 
   const filterQuery = useMemo(() => {
     const params = new URLSearchParams();
@@ -202,34 +204,43 @@ function BookingManager({ apiBase }) {
                     <td>{booking.userEmail}</td>
                     <td>{booking.status}</td>
                     <td>
-                      {booking.status === "PENDING" ? (
-                        <div className="action-row">
-                          <button
-                            className="btn btn-approve sm"
-                            type="button"
-                            onClick={() => openAction(booking.id, "approve")}
-                          >
-                            Approve
-                          </button>
-                          <button
-                            className="btn btn-reject sm"
-                            type="button"
-                            onClick={() => openAction(booking.id, "reject")}
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      ) : booking.status === "APPROVED" ? (
+                      <div className="action-row">
                         <button
-                          className="btn ghost"
-                          type="button"
-                          onClick={() => openAction(booking.id, "cancel")}
+                          className="btn ghost sm"
+                          onClick={() => setViewingQr(booking)}
+                          title="View QR Code"
                         >
-                          Cancel
+                          QR
                         </button>
-                      ) : (
-                        <span className="muted">—</span>
-                      )}
+                        {booking.status === "PENDING" ? (
+                          <>
+                            <button
+                              className="btn btn-approve sm"
+                              type="button"
+                              onClick={() => openAction(booking.id, "approve")}
+                            >
+                              Approve
+                            </button>
+                            <button
+                              className="btn btn-reject sm"
+                              type="button"
+                              onClick={() => openAction(booking.id, "reject")}
+                            >
+                              Reject
+                            </button>
+                          </>
+                        ) : booking.status === "APPROVED" ? (
+                          <button
+                            className="btn ghost"
+                            type="button"
+                            onClick={() => openAction(booking.id, "cancel")}
+                          >
+                            Cancel
+                          </button>
+                        ) : (
+                          <span className="muted">—</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -269,6 +280,44 @@ function BookingManager({ apiBase }) {
           </div>
         </div>
       ) : null}
+
+      {viewingQr && (
+        <div className="modal-overlay" onClick={() => setViewingQr(null)}>
+          <div className="modal-content qr-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="qr-header">
+              <h2>Booking QR Code</h2>
+              <button className="close-btn" onClick={() => setViewingQr(null)}>&times;</button>
+            </div>
+            <div className="qr-body">
+              <div className="qr-container">
+                <QRCodeCanvas
+                  value={JSON.stringify({
+                    id: viewingQr.id,
+                    resource: viewingQr.resourceName,
+                    date: viewingQr.date,
+                    time: `${viewingQr.startTime} - ${viewingQr.endTime}`,
+                    user: viewingQr.userEmail,
+                    status: viewingQr.status
+                  })}
+                  size={256}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+              <div className="qr-details">
+                <p><strong>User:</strong> {viewingQr.userEmail}</p>
+                <p><strong>Resource:</strong> {viewingQr.resourceName}</p>
+                <p><strong>Date:</strong> {viewingQr.date}</p>
+                <p><strong>Time:</strong> {viewingQr.startTime} - {viewingQr.endTime}</p>
+                <p className={`status-text ${viewingQr.status.toLowerCase()}`}>{viewingQr.status}</p>
+              </div>
+            </div>
+            <div className="qr-footer">
+              <p>Scan to verify this booking at the facility entrance.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

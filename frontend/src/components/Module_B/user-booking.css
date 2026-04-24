@@ -220,3 +220,84 @@
 .btn.danger:hover {
   background: #ffe8e8;
 }
+
+/* QR Modal Specifics */
+.qr-modal {
+  max-width: 450px !important;
+  text-align: center;
+}
+
+.qr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 1rem;
+}
+
+.qr-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--text-strong);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #94a3b8;
+  line-height: 1;
+}
+
+.qr-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.qr-container {
+  padding: 1.25rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.qr-details {
+  text-align: left;
+  width: 100%;
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.qr-details p {
+  margin: 0.4rem 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.status-text {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.status-text.pending { background: #fffbeb; color: #92400e; }
+.status-text.approved { background: #f0fdf4; color: #15803d; }
+.status-text.rejected { background: #fef2f2; color: #b91c1c; }
+
+.qr-footer {
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-style: italic;
+  line-height: 1.4;
+}
