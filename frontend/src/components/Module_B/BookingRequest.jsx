@@ -94,57 +94,75 @@ function BookingRequest({ apiBase }) {
 
       <form className="form-card" onSubmit={handleSubmit}>
         <div className="grid">
-          <select
-            name="resourceId"
-            value={form.resourceId}
-            onChange={handleChange}
-            required
-          >
-            <option value="">
-              {loadingResources ? "Loading resources..." : "Select a resource"}
-            </option>
-            {resources.map((resource) => (
-              <option key={resource.id} value={resource.id}>
-                {resource.name} ({resource.type}) - {resource.location}
+          <label>
+            Resource
+            <select
+              name="resourceId"
+              value={form.resourceId}
+              onChange={handleChange}
+              required
+            >
+              <option value="">
+                {loadingResources ? "Loading resources..." : "Select a resource"}
               </option>
-            ))}
-          </select>
-          <input
-            name="date"
-            type="date"
-            value={form.date}
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="startTime"
-            type="time"
-            value={form.startTime}
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="endTime"
-            type="time"
-            value={form.endTime}
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="expectedAttendees"
-            type="number"
-            min="1"
-            value={form.expectedAttendees}
-            onChange={handleChange}
-            placeholder="Expected attendees"
-          />
-          <input
-            name="purpose"
-            value={form.purpose}
-            onChange={handleChange}
-            placeholder="Purpose"
-            required
-          />
+              {resources.map((resource) => (
+                <option key={resource.id} value={resource.id}>
+                  {resource.name} ({resource.type}) - {resource.location}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Date
+            <input
+              name="date"
+              type="date"
+              value={form.date}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          <label>
+            Start Time
+            <input
+              name="startTime"
+              type="time"
+              value={form.startTime}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          <label>
+            End Time
+            <input
+              name="endTime"
+              type="time"
+              value={form.endTime}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          <label>
+            Expected Attendees
+            <input
+              name="expectedAttendees"
+              type="number"
+              min="1"
+              value={form.expectedAttendees}
+              onChange={handleChange}
+              placeholder="Expected attendees"
+            />
+          </label>
+          <label>
+            Purpose
+            <input
+              name="purpose"
+              value={form.purpose}
+              onChange={handleChange}
+              placeholder="Purpose"
+              required
+            />
+          </label>
         </div>
         {error ? <p className="error">{error}</p> : null}
         {status ? <p className="status">{status}</p> : null}
