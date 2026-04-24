@@ -35,6 +35,7 @@ public class BookingService {
 
     public Booking createBooking(BookingRequest request, String userEmail) {
         validateTimeRange(request.startTime(), request.endTime());
+        validateFutureDateTime(request.date(), request.startTime());
         ensureResourceExists(request.resourceId());
         ensureNoConflicts(request.resourceId(), request.date(), request.startTime(), request.endTime());
 
@@ -188,6 +189,7 @@ public class BookingService {
         }
 
         validateTimeRange(request.startTime(), request.endTime());
+        validateFutureDateTime(request.date(), request.startTime());
         ensureResourceExists(request.resourceId());
         
         // Ensure no conflicts, excluding this booking itself
@@ -233,6 +235,16 @@ public class BookingService {
     private void validateTimeRange(LocalTime startTime, LocalTime endTime) {
         if (!endTime.isAfter(startTime)) {
             throw new BadRequestException("End time must be after start time");
+        }
+    }
+
+    private void validateFutureDateTime(LocalDate date, LocalTime startTime) {
+        LocalDate today = LocalDate.now();
+        if (date.isBefore(today)) {
+            throw new BadRequestException("Booking date cannot be in the past");
+        }
+        if (date.isEqual(today) && startTime.isBefore(LocalTime.now())) {
+            throw new BadRequestException("Booking time cannot be in the past for today");
         }
     }
 

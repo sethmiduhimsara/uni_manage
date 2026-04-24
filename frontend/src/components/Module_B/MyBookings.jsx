@@ -86,6 +86,31 @@ function MyBookings({ apiBase }) {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+    const now = new Date();
+    const selectedDate = new Date(editingBooking.date);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const bookingDate = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate(),
+    );
+
+    if (bookingDate < today) {
+      alert("Booking date cannot be in the past.");
+      return;
+    }
+
+    if (bookingDate.getTime() === today.getTime()) {
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+      const [startH, startM] = editingBooking.startTime.split(":").map(Number);
+      const startTime = startH * 60 + startM;
+
+      if (startTime < currentTime) {
+        alert("Booking time cannot be in the past for today.");
+        return;
+      }
+    }
+
     try {
       const response = await fetch(
         `${apiBase}/api/bookings/${editingBooking.id}`,
@@ -110,6 +135,8 @@ function MyBookings({ apiBase }) {
       alert(err.message);
     }
   };
+
+  const todayStr = new Date().toLocaleDateString("en-CA");
 
   return (
     <section className="user-booking">
@@ -208,6 +235,7 @@ function MyBookings({ apiBase }) {
                   <input
                     name="date"
                     type="date"
+                    min={todayStr}
                     value={editingBooking.date}
                     onChange={handleEditChange}
                     required

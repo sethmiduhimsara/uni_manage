@@ -60,6 +60,27 @@ function BookingRequest({ apiBase }) {
     event.preventDefault();
     setError("");
     setStatus("");
+    const now = new Date();
+    const selectedDate = new Date(form.date);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const bookingDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+
+    if (bookingDate < today) {
+      setError("Booking date cannot be in the past.");
+      return;
+    }
+
+    if (bookingDate.getTime() === today.getTime()) {
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+      const [startH, startM] = form.startTime.split(":").map(Number);
+      const startTime = startH * 60 + startM;
+
+      if (startTime < currentTime) {
+        setError("Booking time cannot be in the past for today.");
+        return;
+      }
+    }
+
     try {
       const response = await fetch(`${apiBase}/api/bookings`, {
         method: "POST",
@@ -81,6 +102,8 @@ function BookingRequest({ apiBase }) {
       setError(err.message || "Failed to submit booking");
     }
   };
+
+  const todayStr = new Date().toLocaleDateString("en-CA");
 
   return (
     <section className="user-booking">
@@ -117,6 +140,7 @@ function BookingRequest({ apiBase }) {
             <input
               name="date"
               type="date"
+              min={todayStr}
               value={form.date}
               onChange={handleChange}
               required
