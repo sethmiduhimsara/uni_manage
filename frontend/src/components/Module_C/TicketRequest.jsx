@@ -1,3 +1,5 @@
+//TicketRequest.jsx
+
 import { useEffect, useState } from "react";
 import "./user-ticket.css";
 
@@ -9,6 +11,20 @@ const emptyForm = {
   priority: "MEDIUM",
   contactDetails: "",
 };
+
+const ticketCategoryOptions = [
+  "Electrical",
+  "Plumbing",
+  "HVAC / Air Conditioning",
+  "Furniture Damage",
+  "Classroom Equipment",
+  "Projector / AV",
+  "Network / Wi-Fi",
+  "Cleanliness / Sanitation",
+  "Security / Access",
+  "Safety Hazard",
+  "Other",
+];
 
 async function parseApiError(response, fallbackMessage) {
   try {
@@ -140,13 +156,21 @@ function TicketRequest({ apiBase }) {
             onChange={handleChange}
             placeholder="Location (optional)"
           />
-          <input
+          <select
             name="category"
             value={form.category}
             onChange={handleChange}
-            placeholder="Category"
             required
-          />
+          >
+            <option value="" disabled>
+              Select category
+            </option>
+            {ticketCategoryOptions.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
           <select name="priority" value={form.priority} onChange={handleChange}>
             <option value="LOW">Low</option>
             <option value="MEDIUM">Medium</option>
