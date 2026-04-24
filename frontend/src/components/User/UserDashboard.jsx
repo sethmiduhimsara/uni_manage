@@ -4,9 +4,15 @@ import MyBookings from "../Module_B/MyBookings";
 import TicketRequest from "../Module_C/TicketRequest";
 import MyTickets from "../Module_C/MyTickets";
 import NotificationPanel from "../Module_D/NotificationPanel";
+import UserResourceView from "../Module_A/UserResourceView";
 import "./user-dashboard.css";
 
 const TABS = [
+  {
+    id: "resources",
+    label: "Resources",
+    description: "Explore available campus facilities and assets.",
+  },
   {
     id: "book",
     label: "Request Booking",
@@ -35,6 +41,11 @@ const TABS = [
 ];
 
 const KPI_BY_TAB = {
+  resources: [
+    { label: "Total resources", value: "31" },
+    { label: "Available now", value: "28" },
+    { label: "New this week", value: "3" },
+  ],
   book: [
     { label: "Open booking window", value: "Today" },
     { label: "Pending approvals", value: "2" },
@@ -63,7 +74,7 @@ const KPI_BY_TAB = {
 };
 
 function UserDashboard({ user, apiBase, onLogout }) {
-  const [activeTab, setActiveTab] = useState("book");
+  const [activeTab, setActiveTab] = useState("resources");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -194,7 +205,9 @@ function UserDashboard({ user, apiBase, onLogout }) {
           </section>
 
           <div key={activeTab} className="view-stage">
-            {activeTab === "book" ? (
+            {activeTab === "resources" ? (
+              <UserResourceView apiBase={apiBase} />
+            ) : activeTab === "book" ? (
               <BookingRequest apiBase={apiBase} />
             ) : activeTab === "my-bookings" ? (
               <MyBookings apiBase={apiBase} />
