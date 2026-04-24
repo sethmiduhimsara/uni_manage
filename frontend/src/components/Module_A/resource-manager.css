@@ -170,6 +170,48 @@
   display: flex;
   gap: 12px;
   justify-content: flex-start;
+  margin-top: 8px;
+}
+
+.button {
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
+
+.button.primary {
+  background: var(--accent, #187b86);
+  color: white;
+  box-shadow: 0 4px 12px rgba(24, 123, 134, 0.25);
+}
+
+.button.primary:hover {
+  background: var(--accent-strong, #0f6370);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(24, 123, 134, 0.35);
+}
+
+.button.primary:active {
+  transform: translateY(0);
+}
+
+.button.ghost {
+  background: transparent;
+  color: var(--text-muted, #5a667d);
+  border: 1px solid var(--border-soft, rgba(15, 31, 53, 0.1));
+}
+
+.button.ghost:hover {
+  background: rgba(15, 31, 53, 0.04);
+  color: var(--text-strong, #0f1f35);
+  border-color: rgba(15, 31, 53, 0.2);
 }
 
 @media (max-width: 720px) {
