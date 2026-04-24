@@ -77,6 +77,16 @@ function UserDashboard({ user, apiBase, onLogout }) {
   const [activeTab, setActiveTab] = useState("resources");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [preselectedResourceId, setPreselectedResourceId] = useState(null);
+
+  const handleRequestBooking = (resourceId) => {
+    setPreselectedResourceId(resourceId);
+    setActiveTab("book");
+  };
+
+  const handleClearPreselect = () => {
+    setPreselectedResourceId(null);
+  };
 
   const subtitle = useMemo(() => {
     return user?.email || "user";
@@ -206,9 +216,16 @@ function UserDashboard({ user, apiBase, onLogout }) {
 
           <div key={activeTab} className="view-stage">
             {activeTab === "resources" ? (
-              <UserResourceView apiBase={apiBase} />
+              <UserResourceView
+                apiBase={apiBase}
+                onNavigateToBooking={handleRequestBooking}
+              />
             ) : activeTab === "book" ? (
-              <BookingRequest apiBase={apiBase} />
+              <BookingRequest
+                apiBase={apiBase}
+                initialResourceId={preselectedResourceId}
+                onClearPreselect={handleClearPreselect}
+              />
             ) : activeTab === "my-bookings" ? (
               <MyBookings apiBase={apiBase} />
             ) : activeTab === "ticket" ? (
