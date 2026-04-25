@@ -80,6 +80,12 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.assignTechnician(id, request));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTicket(@PathVariable String id) {
+        ticketService.deleteTicket(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{id}/comments")
     public ResponseEntity<Ticket> addComment(
             @PathVariable String id,

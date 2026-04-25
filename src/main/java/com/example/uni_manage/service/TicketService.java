@@ -153,6 +153,11 @@ public class TicketService {
         return ticketRepository.save(ticket);
     }
 
+    public void deleteTicket(String id) {
+        Ticket ticket = getTicket(id);
+        ticketRepository.delete(ticket);
+    }
+
     public Ticket updateStatus(String id, TicketStatusUpdateRequest request) {
         Ticket ticket = getTicket(id);
         TicketStatus nextStatus = parseStatus(request.status());
