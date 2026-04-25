@@ -47,19 +47,26 @@ function TicketManager({ apiBase }) {
   const [action, setAction] = useState({ id: "", type: "", value: "" });
 
   const summary = useMemo(() => {
-    const open = tickets.filter((ticket) => ticket.status === "OPEN").length;
-    const inProgress = tickets.filter(
-      (ticket) => ticket.status === "IN_PROGRESS",
-    ).length;
-    const unassigned = tickets.filter(
-      (ticket) => !ticket.assignedToEmail,
-    ).length;
-    return {
-      total: tickets.length,
-      open,
-      inProgress,
-      unassigned,
+    const counts = {
+      TOTAL: tickets.length,
+      OPEN: 0,
+      IN_PROGRESS: 0,
+      RESOLVED: 0,
+      CLOSED: 0,
+      REJECTED: 0,
+      UNASSIGNED: 0
     };
+    
+    tickets.forEach(ticket => {
+      if (counts[ticket.status] !== undefined) {
+        counts[ticket.status]++;
+      }
+      if (!ticket.assignedToEmail) {
+        counts.UNASSIGNED++;
+      }
+    });
+
+    return counts;
   }, [tickets]);
 
   const filterQuery = useMemo(() => {
@@ -190,64 +197,40 @@ function TicketManager({ apiBase }) {
 
   return (
     <section className="ticket-manager">
-      <header className="ticket-hero">
-        <div>
-          <p className="eyebrow">Module C</p>
-          <h1>Maintenance Tickets</h1>
-          <p className="lead">
-            Assign technicians, update status, and monitor issues.
-          </p>
-        </div>
-        <div className="hero-actions">
-          <span className="hero-chip">Live Operations View</span>
-          <button className="btn ghost" type="button" onClick={loadTickets}>
-            Refresh
-          </button>
-        </div>
-      </header>
-
-      <section className="tm-metrics" aria-label="Ticket metrics">
-        <article className="metric-card">
-          <p>Total Tickets</p>
-          <h3>{summary.total}</h3>
-        </article>
-        <article className="metric-card">
-          <p>Open</p>
-          <h3>{summary.open}</h3>
-        </article>
-        <article className="metric-card">
-          <p>In Progress</p>
-          <h3>{summary.inProgress}</h3>
-        </article>
-        <article className="metric-card">
-          <p>Unassigned</p>
-          <h3>{summary.unassigned}</h3>
-        </article>
-      </section>
-
-      <section className="filter-panel" aria-label="Ticket filters">
-        <div className="filters">
-          <select
-            name="status"
-            value={filters.status}
-            onChange={handleFilterChange}
+      <nav className="tm-tabs" aria-label="Ticket status filters">
+        <button 
+          className={`tm-tab ${!filters.status ? 'active' : ''}`}
+          type="button"
+          onClick={() => handleFilterChange({ target: { name: 'status', value: '' } })}
+        >
+          <span className="tab-label">All Tickets</span>
+          <span className="tab-count">{summary.TOTAL}</span>
+        </button>
+        {statusOptions.map((opt) => (
+          <button 
+            key={opt}
+            className={`tm-tab tm-tab-${opt.toLowerCase().replace('_', '-')} ${filters.status === opt ? 'active' : ''}`}
+            type="button"
+            onClick={() => handleFilterChange({ target: { name: 'status', value: opt } })}
           >
-            <option value="">All status</option>
-            {statusOptions.map((status) => (
-              <option key={status} value={status}>
-                {prettyStatus(status)}
-              </option>
-            ))}
-          </select>
+            <span className="tab-label">{prettyStatus(opt)}</span>
+            <span className="tab-count">{summary[opt]}</span>
+          </button>
+        ))}
+      </nav>
+
+      <section className="filter-bar" aria-label="Ticket filters">
+        <div className="filter-group">
           <select
             name="priority"
             value={filters.priority}
             onChange={handleFilterChange}
+            aria-label="Filter by priority"
           >
-            <option value="">All priorities</option>
+            <option value="">All Priorities</option>
             {priorityOptions.map((priority) => (
               <option key={priority} value={priority}>
-                {priority}
+                {priority} Priority
               </option>
             ))}
           </select>
@@ -255,23 +238,26 @@ function TicketManager({ apiBase }) {
             name="resourceId"
             value={filters.resourceId}
             onChange={handleFilterChange}
-            placeholder="Resource ID"
+            placeholder="Resource ID..."
           />
           <input
             name="location"
             value={filters.location}
             onChange={handleFilterChange}
-            placeholder="Location"
+            placeholder="Location..."
           />
           <input
             name="createdByEmail"
             value={filters.createdByEmail}
             onChange={handleFilterChange}
-            placeholder="Created by email"
+            placeholder="Created by..."
           />
         </div>
-        <button className="btn ghost" type="button" onClick={resetFilters}>
-          Clear filters
+        <button className="btn-clear" type="button" onClick={resetFilters}>
+          Reset
+        </button>
+        <button className="btn-refresh" type="button" onClick={loadTickets}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         </button>
       </section>
 
@@ -308,7 +294,16 @@ function TicketManager({ apiBase }) {
             <tbody>
               {tickets.length === 0 ? (
                 <tr>
-                  <td colSpan="6">No tickets found.</td>
+                  <td colSpan="6">
+                    <div className="tm-empty-state">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                        <polyline points="13 2 13 9 20 9" />
+                      </svg>
+                      <p>No tickets found matching your current filters.</p>
+                      <button className="btn ghost sm" onClick={resetFilters}>Clear all filters</button>
+                    </div>
+                  </td>
                 </tr>
               ) : (
                 tickets.map((ticket) => (
@@ -356,7 +351,8 @@ function TicketManager({ apiBase }) {
                           title="Update status"
                         >
                           <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 4a8 8 0 0 0-7.73 6h2.09A6 6 0 1 1 6 12H3l3.5 3.5L10 12H7a5 5 0 1 0 5-5Z" />
+                            <path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25Z" />
+                            <path d="M20.71 7.04a1 1 0 0 0 0-1.41L18.37 3.29a1 1 0 0 0-1.41 0L15.13 5.12l3.75 3.75l1.83-1.83Z" />
                           </svg>
                           <span className="sr-only">Update status</span>
                         </button>
