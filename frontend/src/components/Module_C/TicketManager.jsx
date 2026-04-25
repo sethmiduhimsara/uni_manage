@@ -13,6 +13,18 @@ const emptyFilters = {
 const statusOptions = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "REJECTED"];
 const priorityOptions = ["LOW", "MEDIUM", "HIGH"];
 
+function prettyStatus(status) {
+  return String(status || "OPEN").replaceAll("_", " ");
+}
+
+function statusClass(status) {
+  return `tm-status tm-status-${String(status || "OPEN").toLowerCase().replaceAll("_", "-")}`;
+}
+
+function priorityClass(priority) {
+  return `tm-priority tm-priority-${String(priority || "MEDIUM").toLowerCase()}`;
+}
+
 async function parseApiError(response, fallbackMessage) {
   try {
     const data = await response.json();
@@ -31,6 +43,20 @@ function TicketManager({ apiBase }) {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [action, setAction] = useState({ id: "", type: "", value: "" });
+
+  const summary = useMemo(() => {
+    const open = tickets.filter((ticket) => ticket.status === "OPEN").length;
+    const inProgress = tickets.filter(
+      (ticket) => ticket.status === "IN_PROGRESS",
+    ).length;
+    const unassigned = tickets.filter((ticket) => !ticket.assignedToEmail).length;
+    return {
+      total: tickets.length,
+      open,
+      inProgress,
+      unassigned,
+    };
+  }, [tickets]);
 
   const filterQuery = useMemo(() => {
     const params = new URLSearchParams();
@@ -72,6 +98,10 @@ function TicketManager({ apiBase }) {
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const resetFilters = () => {
+    setFilters(emptyFilters);
   };
 
   const openAction = (id, type) => {
@@ -156,7 +186,7 @@ function TicketManager({ apiBase }) {
 
   return (
     <section className="ticket-manager">
-      <header>
+      <header className="ticket-hero">
         <div>
           <p className="eyebrow">Module C</p>
           <h1>Maintenance Tickets</h1>
@@ -164,55 +194,82 @@ function TicketManager({ apiBase }) {
             Assign technicians, update status, and monitor issues.
           </p>
         </div>
-        <button className="btn ghost" type="button" onClick={loadTickets}>
-          Refresh
-        </button>
+        <div className="hero-actions">
+          <span className="hero-chip">Live Operations View</span>
+          <button className="btn ghost" type="button" onClick={loadTickets}>
+            Refresh
+          </button>
+        </div>
       </header>
 
-      <div className="filters">
-        <select
-          name="status"
-          value={filters.status}
-          onChange={handleFilterChange}
-        >
-          <option value="">All status</option>
-          {statusOptions.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
-        <select
-          name="priority"
-          value={filters.priority}
-          onChange={handleFilterChange}
-        >
-          <option value="">All priorities</option>
-          {priorityOptions.map((priority) => (
-            <option key={priority} value={priority}>
-              {priority}
-            </option>
-          ))}
-        </select>
-        <input
-          name="resourceId"
-          value={filters.resourceId}
-          onChange={handleFilterChange}
-          placeholder="Resource ID"
-        />
-        <input
-          name="location"
-          value={filters.location}
-          onChange={handleFilterChange}
-          placeholder="Location"
-        />
-        <input
-          name="createdByEmail"
-          value={filters.createdByEmail}
-          onChange={handleFilterChange}
-          placeholder="Created by email"
-        />
-      </div>
+      <section className="tm-metrics" aria-label="Ticket metrics">
+        <article className="metric-card">
+          <p>Total Tickets</p>
+          <h3>{summary.total}</h3>
+        </article>
+        <article className="metric-card">
+          <p>Open</p>
+          <h3>{summary.open}</h3>
+        </article>
+        <article className="metric-card">
+          <p>In Progress</p>
+          <h3>{summary.inProgress}</h3>
+        </article>
+        <article className="metric-card">
+          <p>Unassigned</p>
+          <h3>{summary.unassigned}</h3>
+        </article>
+      </section>
+
+      <section className="filter-panel" aria-label="Ticket filters">
+        <div className="filters">
+          <select
+            name="status"
+            value={filters.status}
+            onChange={handleFilterChange}
+          >
+            <option value="">All status</option>
+            {statusOptions.map((status) => (
+              <option key={status} value={status}>
+                {prettyStatus(status)}
+              </option>
+            ))}
+          </select>
+          <select
+            name="priority"
+            value={filters.priority}
+            onChange={handleFilterChange}
+          >
+            <option value="">All priorities</option>
+            {priorityOptions.map((priority) => (
+              <option key={priority} value={priority}>
+                {priority}
+              </option>
+            ))}
+          </select>
+          <input
+            name="resourceId"
+            value={filters.resourceId}
+            onChange={handleFilterChange}
+            placeholder="Resource ID"
+          />
+          <input
+            name="location"
+            value={filters.location}
+            onChange={handleFilterChange}
+            placeholder="Location"
+          />
+          <input
+            name="createdByEmail"
+            value={filters.createdByEmail}
+            onChange={handleFilterChange}
+            placeholder="Created by email"
+          />
+        </div>
+        <button className="btn ghost" type="button" onClick={resetFilters}>
+          Clear filters
+        </button>
+      </section>
 
       {error ? <p className="error">{error}</p> : null}
       {status ? <p className="status success">{status}</p> : null}
@@ -257,9 +314,18 @@ function TicketManager({ apiBase }) {
                       <span className="muted">
                         {ticket.resourceId || ticket.location}
                       </span>
+                      <span className="ticket-id">#{ticket.id}</span>
                     </td>
-                    <td>{ticket.priority}</td>
-                    <td>{ticket.status}</td>
+                    <td>
+                      <span className={priorityClass(ticket.priority)}>
+                        {ticket.priority}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={statusClass(ticket.status)}>
+                        {prettyStatus(ticket.status)}
+                      </span>
+                    </td>
                     <td>{ticket.assignedToEmail || "Unassigned"}</td>
                     <td>{ticket.createdByEmail}</td>
                     <td>
