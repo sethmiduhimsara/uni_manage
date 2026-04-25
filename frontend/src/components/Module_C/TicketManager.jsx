@@ -127,6 +127,33 @@ function TicketManager({ apiBase }) {
     }
   };
 
+  const deleteTicket = async (ticketId) => {
+    const confirmed = window.confirm(
+      "Delete this ticket permanently? This action cannot be undone.",
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setError("");
+    setStatus("");
+    try {
+      const response = await fetch(`${apiBase}/api/tickets/${ticketId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(
+          await parseApiError(response, "Failed to delete ticket"),
+        );
+      }
+      setStatus("Ticket deleted successfully.");
+      await loadTickets();
+    } catch (err) {
+      setError(err.message || "Failed to delete ticket");
+    }
+  };
+
   return (
     <section className="ticket-manager">
       <header>
@@ -238,18 +265,25 @@ function TicketManager({ apiBase }) {
                     <td>
                       <div className="action-row">
                         <button
-                          className="btn ghost"
+                          className="ticket-action-btn ticket-action-assign"
                           type="button"
                           onClick={() => openAction(ticket.id, "assign")}
                         >
                           Assign
                         </button>
                         <button
-                          className="btn primary"
+                          className="ticket-action-btn ticket-action-update"
                           type="button"
                           onClick={() => openAction(ticket.id, "status")}
                         >
                           Update status
+                        </button>
+                        <button
+                          className="ticket-action-btn ticket-action-delete"
+                          type="button"
+                          onClick={() => deleteTicket(ticket.id)}
+                        >
+                          Delete
                         </button>
                       </div>
                     </td>
