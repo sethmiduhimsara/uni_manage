@@ -35,11 +35,13 @@ public class BookingService {
 
     public Booking createBooking(BookingRequest request, String userEmail) {
         validateTimeRange(request.startTime(), request.endTime());
+        validateFutureDateTime(request.date(), request.startTime());
         ensureResourceExists(request.resourceId());
         ensureNoConflicts(request.resourceId(), request.date(), request.startTime(), request.endTime());
 
         Booking booking = new Booking();
         booking.setResourceId(request.resourceId());
+        booking.setResourceName(getResourceName(request.resourceId()));
         booking.setDate(request.date());
         booking.setStartTime(request.startTime());
         booking.setEndTime(request.endTime());
@@ -61,7 +63,9 @@ public class BookingService {
     }
 
     public List<Booking> getBookingsForUser(String userEmail) {
-        return bookingRepository.findByUserEmail(userEmail);
+        return bookingRepository.findByUserEmail(userEmail).stream()
+                .map(this::populateResourceName)
+                .toList();
     }
 
     public List<Booking> getBookingsForAdmin(
@@ -72,13 +76,18 @@ public class BookingService {
     ) {
         int filters = countProvided(status, resourceId, date, userEmail);
         if (filters == 0) {
-            return bookingRepository.findAll();
+            return bookingRepository.findAll().stream()
+                    .map(this::populateResourceName)
+                    .toList();
         }
         if (filters == 1) {
-            if (status != null) return bookingRepository.findByStatus(parseStatus(status));
-            if (resourceId != null) return bookingRepository.findByResourceId(resourceId);
-            if (date != null) return bookingRepository.findByDate(date);
-            return bookingRepository.findByUserEmail(userEmail);
+            List<Booking> results;
+            if (status != null) results = bookingRepository.findByStatus(parseStatus(status));
+            else if (resourceId != null) results = bookingRepository.findByResourceId(resourceId);
+            else if (date != null) results = bookingRepository.findByDate(date);
+            else results = bookingRepository.findByUserEmail(userEmail);
+
+            return results.stream().map(this::populateResourceName).toList();
         }
 
         Stream<Booking> stream = bookingRepository.findAll().stream();
@@ -99,7 +108,7 @@ public class BookingService {
             stream = stream.filter(booking -> booking.getUserEmail() != null
                     && booking.getUserEmail().toLowerCase(Locale.ROOT).equals(normalizedEmail));
         }
-        return stream.toList();
+        return stream.map(this::populateResourceName).toList();
     }
 
     public Booking approveBooking(String id, String reason) {
@@ -160,6 +169,58 @@ public class BookingService {
         return saved;
     }
 
+    public void deleteBooking(String id, String requesterEmail) {
+        Booking booking = getBooking(id);
+        if (!booking.getUserEmail().equalsIgnoreCase(requesterEmail)) {
+            throw new ForbiddenOperationException("You are not allowed to delete this booking");
+        }
+        // Allow deleting pending or rejected bookings. 
+        // Approved bookings should be cancelled instead, but we'll allow delete if that's the intent.
+        bookingRepository.delete(booking);
+    }
+
+    public Booking updateBooking(String id, BookingRequest request, String requesterEmail) {
+        Booking booking = getBooking(id);
+        if (!booking.getUserEmail().equalsIgnoreCase(requesterEmail)) {
+            throw new ForbiddenOperationException("You are not allowed to update this booking");
+        }
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new BadRequestException("Only PENDING bookings can be updated");
+        }
+
+        validateTimeRange(request.startTime(), request.endTime());
+        validateFutureDateTime(request.date(), request.startTime());
+        ensureResourceExists(request.resourceId());
+        
+        // Ensure no conflicts, excluding this booking itself
+        ensureNoConflictsExcluding(request.resourceId(), request.date(), request.startTime(), request.endTime(), id);
+
+        booking.setResourceId(request.resourceId());
+        booking.setResourceName(getResourceName(request.resourceId()));
+        booking.setDate(request.date());
+        booking.setStartTime(request.startTime());
+        booking.setEndTime(request.endTime());
+        booking.setPurpose(request.purpose());
+        booking.setExpectedAttendees(request.expectedAttendees());
+        booking.setUpdatedAt(Instant.now());
+        
+        return bookingRepository.save(booking);
+    }
+
+    private void ensureNoConflictsExcluding(String resourceId, LocalDate date, LocalTime start, LocalTime end, String excludeId) {
+        List<Booking> existing = bookingRepository.findByResourceIdAndDateAndStatusIn(
+                resourceId,
+                date,
+                CONFLICT_STATUSES
+        );
+        for (Booking booking : existing) {
+            if (booking.getId().equals(excludeId)) continue;
+            if (isOverlapping(start, end, booking.getStartTime(), booking.getEndTime())) {
+                throw new BookingConflictException("Booking conflicts with existing schedule");
+            }
+        }
+    }
+
     private Booking getBooking(String id) {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + id));
@@ -174,6 +235,16 @@ public class BookingService {
     private void validateTimeRange(LocalTime startTime, LocalTime endTime) {
         if (!endTime.isAfter(startTime)) {
             throw new BadRequestException("End time must be after start time");
+        }
+    }
+
+    private void validateFutureDateTime(LocalDate date, LocalTime startTime) {
+        LocalDate today = LocalDate.now();
+        if (date.isBefore(today)) {
+            throw new BadRequestException("Booking date cannot be in the past");
+        }
+        if (date.isEqual(today) && startTime.isBefore(LocalTime.now())) {
+            throw new BadRequestException("Booking time cannot be in the past for today");
         }
     }
 
@@ -215,5 +286,18 @@ public class BookingService {
         if (date != null) count++;
         if (userEmail != null) count++;
         return count;
+    }
+
+    private String getResourceName(String resourceId) {
+        return resourceRepository.findById(resourceId)
+                .map(com.example.uni_manage.model.Resource::getName)
+                .orElse("Unknown Resource");
+    }
+
+    private Booking populateResourceName(Booking booking) {
+        if (booking.getResourceName() == null || booking.getResourceName().isBlank()) {
+            booking.setResourceName(getResourceName(booking.getResourceId()));
+        }
+        return booking;
     }
 }

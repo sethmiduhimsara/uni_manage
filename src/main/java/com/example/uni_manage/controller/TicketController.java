@@ -6,6 +6,7 @@ import com.example.uni_manage.dto.TicketAssignRequest;
 import com.example.uni_manage.dto.TicketCommentRequest;
 import com.example.uni_manage.dto.TicketCreateRequest;
 import com.example.uni_manage.dto.TicketStatusUpdateRequest;
+import com.example.uni_manage.dto.TicketUserUpdateRequest;
 import com.example.uni_manage.model.Ticket;
 import com.example.uni_manage.service.TicketService;
 import jakarta.validation.Valid;
@@ -78,6 +79,22 @@ public class TicketController {
             @Valid @RequestBody TicketAssignRequest request
     ) {
         return ResponseEntity.ok(ticketService.assignTechnician(id, request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Ticket> updateTicket(
+            @PathVariable String id,
+            @Valid @RequestBody TicketUserUpdateRequest request,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal OAuth2User user
+    ) {
+        boolean isAdmin = hasRole(user, "ROLE_ADMIN");
+        return ResponseEntity.ok(ticketService.updateTicket(id, request, getEmail(user), isAdmin));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTicket(@PathVariable String id) {
+        ticketService.deleteTicket(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/comments")

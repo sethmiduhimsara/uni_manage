@@ -1,3 +1,5 @@
+//TicketRequest.jsx
+
 import { useEffect, useState } from "react";
 import "./user-ticket.css";
 
@@ -9,6 +11,20 @@ const emptyForm = {
   priority: "MEDIUM",
   contactDetails: "",
 };
+
+const ticketCategoryOptions = [
+  "Electrical",
+  "Plumbing",
+  "HVAC / Air Conditioning",
+  "Furniture Damage",
+  "Classroom Equipment",
+  "Projector / AV",
+  "Network / Wi-Fi",
+  "Cleanliness / Sanitation",
+  "Security / Access",
+  "Safety Hazard",
+  "Other",
+];
 
 async function parseApiError(response, fallbackMessage) {
   try {
@@ -108,15 +124,20 @@ function TicketRequest({ apiBase }) {
 
   return (
     <section className="user-ticket">
-      <header>
+      <header className="ticket-hero">
         <div>
           <p className="eyebrow">Module C</p>
           <h1>Report an Incident</h1>
           <p className="lead">Create a maintenance ticket with evidence.</p>
         </div>
+        <div className="ticket-note-chip">Response target: within 2 hours</div>
       </header>
 
       <form className="form-card" onSubmit={handleSubmit}>
+        <div className="card-head">
+          <h2>Incident Details</h2>
+          <p>Provide clear details so technicians can triage faster.</p>
+        </div>
         <div className="grid">
           <select
             name="resourceId"
@@ -140,13 +161,21 @@ function TicketRequest({ apiBase }) {
             onChange={handleChange}
             placeholder="Location (optional)"
           />
-          <input
+          <select
             name="category"
             value={form.category}
             onChange={handleChange}
-            placeholder="Category"
             required
-          />
+          >
+            <option value="" disabled>
+              Select category
+            </option>
+            {ticketCategoryOptions.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
           <select name="priority" value={form.priority} onChange={handleChange}>
             <option value="LOW">Low</option>
             <option value="MEDIUM">Medium</option>
@@ -169,13 +198,26 @@ function TicketRequest({ apiBase }) {
           required
         />
         <input type="file" multiple accept="image/*" onChange={handleFiles} />
-        <p className="hint">Attach up to 3 images (JPG, PNG, GIF, WEBP).</p>
+        <p className="hint">
+          Attach up to 3 images (JPG, PNG, GIF, WEBP). Selected: {files.length}
+        </p>
         {error ? <p className="error">{error}</p> : null}
         {status ? <p className="status">{status}</p> : null}
-        <button className="btn primary" type="submit">
-          Submit ticket
-        </button>
+        <div className="action-row-inline">
+          <button className="btn primary" type="submit">
+            Submit ticket
+          </button>
+        </div>
       </form>
+
+      <aside className="info-card">
+        <h3>Before You Submit</h3>
+        <ul>
+          <li>Use exact location details (building, floor, room).</li>
+          <li>Add one clear photo showing the issue context.</li>
+          <li>Include a reachable contact number or email.</li>
+        </ul>
+      </aside>
     </section>
   );
 }

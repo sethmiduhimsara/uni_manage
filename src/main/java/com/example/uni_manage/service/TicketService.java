@@ -8,6 +8,7 @@ import com.example.uni_manage.dto.TicketAssignRequest;
 import com.example.uni_manage.dto.TicketCommentRequest;
 import com.example.uni_manage.dto.TicketCreateRequest;
 import com.example.uni_manage.dto.TicketStatusUpdateRequest;
+import com.example.uni_manage.dto.TicketUserUpdateRequest;
 import com.example.uni_manage.exception.BadRequestException;
 import com.example.uni_manage.exception.FileStorageException;
 import com.example.uni_manage.exception.ForbiddenOperationException;
@@ -151,6 +152,31 @@ public class TicketService {
         ticket.setAssignedToEmail(request.technicianEmail());
         ticket.setUpdatedAt(Instant.now());
         return ticketRepository.save(ticket);
+    }
+
+    public Ticket updateTicket(String id, TicketUserUpdateRequest request, String requesterEmail, boolean isAdmin) {
+        Ticket ticket = getTicket(id);
+        boolean ownsTicket = ticket.getCreatedByEmail() != null
+                && requesterEmail != null
+                && ticket.getCreatedByEmail().equalsIgnoreCase(requesterEmail);
+
+        if (!isAdmin && !ownsTicket) {
+            throw new ForbiddenOperationException("You are not allowed to edit this ticket");
+        }
+        if (!isAdmin && ticket.getStatus() != TicketStatus.OPEN) {
+            throw new BadRequestException("Only OPEN tickets can be edited");
+        }
+
+        ticket.setDescription(request.description().trim());
+        ticket.setPriority(request.priority());
+        ticket.setContactDetails(request.contactDetails().trim());
+        ticket.setUpdatedAt(Instant.now());
+        return ticketRepository.save(ticket);
+    }
+
+    public void deleteTicket(String id) {
+        Ticket ticket = getTicket(id);
+        ticketRepository.delete(ticket);
     }
 
     public Ticket updateStatus(String id, TicketStatusUpdateRequest request) {

@@ -20,6 +20,7 @@ public class Booking {
 
     @NotBlank(message = "Resource id is required")
     private String resourceId;
+    private String resourceName;
 
     @NotNull(message = "Booking date is required")
     private LocalDate date;

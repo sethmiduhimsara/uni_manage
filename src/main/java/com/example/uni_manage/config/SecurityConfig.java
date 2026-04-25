@@ -49,9 +49,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/tickets").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/tickets/me").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/tickets/*").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/tickets/*").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/tickets/*/comments").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/tickets/*/comments/*").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/tickets/*/comments/*").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/tickets/*").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/tickets/*/status").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/tickets/*/assign").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/tickets/**").hasRole("ADMIN")
@@ -69,6 +71,15 @@ public class SecurityConfig {
                     .oidcUserService(oidcUserService())
                 )
                 .defaultSuccessUrl("http://localhost:5173", true)
+            )
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, authException) -> {
+                    if (request.getRequestURI().startsWith("/api/")) {
+                        response.sendError(401, "Unauthorized");
+                    } else {
+                        response.sendRedirect("/oauth2/authorization/google");
+                    }
+                })
             )
             .logout(logout -> logout.logoutSuccessHandler((request, response, authentication) -> {
                 response.setStatus(200);
@@ -120,7 +131,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(securityProperties.allowedOrigins());
         config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type"));
+        config.setAllowedHeaders(java.util.List.of("*"));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

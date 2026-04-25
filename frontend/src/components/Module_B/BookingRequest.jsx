@@ -21,12 +21,19 @@ async function parseApiError(response, fallbackMessage) {
   return fallbackMessage;
 }
 
-function BookingRequest({ apiBase }) {
+function BookingRequest({ apiBase, initialResourceId, onClearPreselect }) {
   const [form, setForm] = useState(emptyForm);
   const [resources, setResources] = useState([]);
   const [loadingResources, setLoadingResources] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (initialResourceId) {
+      setForm((prev) => ({ ...prev, resourceId: initialResourceId }));
+      onClearPreselect();
+    }
+  }, [initialResourceId, onClearPreselect]);
 
   useEffect(() => {
     const loadResources = async () => {
@@ -60,6 +67,27 @@ function BookingRequest({ apiBase }) {
     event.preventDefault();
     setError("");
     setStatus("");
+    const now = new Date();
+    const selectedDate = new Date(form.date);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const bookingDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+
+    if (bookingDate < today) {
+      setError("Booking date cannot be in the past.");
+      return;
+    }
+
+    if (bookingDate.getTime() === today.getTime()) {
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+      const [startH, startM] = form.startTime.split(":").map(Number);
+      const startTime = startH * 60 + startM;
+
+      if (startTime < currentTime) {
+        setError("Booking time cannot be in the past for today.");
+        return;
+      }
+    }
+
     try {
       const response = await fetch(`${apiBase}/api/bookings`, {
         method: "POST",
@@ -82,6 +110,8 @@ function BookingRequest({ apiBase }) {
     }
   };
 
+  const todayStr = new Date().toLocaleDateString("en-CA");
+
   return (
     <section className="user-booking">
       <header>
@@ -94,57 +124,76 @@ function BookingRequest({ apiBase }) {
 
       <form className="form-card" onSubmit={handleSubmit}>
         <div className="grid">
-          <select
-            name="resourceId"
-            value={form.resourceId}
-            onChange={handleChange}
-            required
-          >
-            <option value="">
-              {loadingResources ? "Loading resources..." : "Select a resource"}
-            </option>
-            {resources.map((resource) => (
-              <option key={resource.id} value={resource.id}>
-                {resource.name} ({resource.type}) - {resource.location}
+          <label>
+            Resource
+            <select
+              name="resourceId"
+              value={form.resourceId}
+              onChange={handleChange}
+              required
+            >
+              <option value="">
+                {loadingResources ? "Loading resources..." : "Select a resource"}
               </option>
-            ))}
-          </select>
-          <input
-            name="date"
-            type="date"
-            value={form.date}
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="startTime"
-            type="time"
-            value={form.startTime}
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="endTime"
-            type="time"
-            value={form.endTime}
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="expectedAttendees"
-            type="number"
-            min="1"
-            value={form.expectedAttendees}
-            onChange={handleChange}
-            placeholder="Expected attendees"
-          />
-          <input
-            name="purpose"
-            value={form.purpose}
-            onChange={handleChange}
-            placeholder="Purpose"
-            required
-          />
+              {resources.map((resource) => (
+                <option key={resource.id} value={resource.id}>
+                  {resource.name} ({resource.type}) - {resource.location}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Date
+            <input
+              name="date"
+              type="date"
+              min={todayStr}
+              value={form.date}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          <label>
+            Start Time
+            <input
+              name="startTime"
+              type="time"
+              value={form.startTime}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          <label>
+            End Time
+            <input
+              name="endTime"
+              type="time"
+              value={form.endTime}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          <label>
+            Expected Attendees
+            <input
+              name="expectedAttendees"
+              type="number"
+              min="1"
+              value={form.expectedAttendees}
+              onChange={handleChange}
+              placeholder="Expected attendees"
+            />
+          </label>
+          <label>
+            Purpose
+            <input
+              name="purpose"
+              value={form.purpose}
+              onChange={handleChange}
+              placeholder="Purpose"
+              required
+            />
+          </label>
         </div>
         {error ? <p className="error">{error}</p> : null}
         {status ? <p className="status">{status}</p> : null}
