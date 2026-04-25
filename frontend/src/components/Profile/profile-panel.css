@@ -3,6 +3,7 @@
   flex-direction: column;
   gap: 20px;
   max-width: 900px;
+  margin: 0 auto;
 }
 
 .profile-panel header {
@@ -11,6 +12,9 @@
   align-items: flex-start;
   gap: 16px;
   flex-wrap: wrap;
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .profile-panel h1 {
@@ -49,6 +53,9 @@
   border-radius: 18px;
   border: 1px solid var(--border-soft);
   box-shadow: var(--shadow-soft);
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .profile-form label {
