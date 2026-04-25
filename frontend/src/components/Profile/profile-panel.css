@@ -1,0 +1,122 @@
+.profile-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 900px;
+}
+
+.profile-panel header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.profile-panel h1 {
+  font-size: 34px;
+  margin: 0;
+  font-family: var(--font-display);
+}
+
+.profile-panel .lead {
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.profile-meta {
+  background: rgba(255, 255, 255, 0.85);
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.profile-meta .label {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 10px;
+  color: var(--text-soft);
+}
+
+.profile-form {
+  display: grid;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+}
+
+.profile-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.profile-form input,
+.profile-form textarea {
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+}
+
+.profile-form input:focus,
+.profile-form textarea:focus {
+  outline: none;
+  border-color: rgba(14, 116, 144, 0.6);
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.14);
+}
+
+.profile-form textarea {
+  resize: vertical;
+}
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #fff;
+  box-shadow: 0 12px 22px rgba(24, 123, 134, 0.26);
+}
+
+.error {
+  color: #a61e1e;
+  background: #ffe8e8;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.status {
+  color: #176f5c;
+  background: #e6fbf4;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+@media (max-width: 720px) {
+  .profile-panel h1 {
+    font-size: 28px;
+  }
+}

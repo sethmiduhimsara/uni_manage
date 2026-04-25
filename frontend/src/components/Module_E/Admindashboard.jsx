@@ -3,6 +3,7 @@ import ResourceManager from "../Module_A/ResourceManager";
 import BookingManager from "../Module_B/BookingManager";
 import TicketManager from "../Module_C/TicketManager";
 import NotificationPanel from "../Module_D/NotificationPanel";
+import ProfilePanel from "../Profile/ProfilePanel";
 import "./admindashboard.css";
 
 const MODULES = [
@@ -26,6 +27,11 @@ const MODULES = [
     label: "Notifications",
     description: "Track alerts and communication across operations.",
   },
+  {
+    id: "module-profile",
+    label: "Profile",
+    description: "Update your personal details and contact info.",
+  },
 ];
 
 const KPI_BY_MODULE = {
@@ -48,6 +54,11 @@ const KPI_BY_MODULE = {
     { label: "Unread alerts", value: "7" },
     { label: "Escalations", value: "1" },
     { label: "Broadcasts", value: "2" },
+  ],
+  "module-profile": [
+    { label: "Profile status", value: "Active" },
+    { label: "Last update", value: "Today" },
+    { label: "Visibility", value: "Private" },
   ],
 };
 
@@ -191,6 +202,8 @@ function Admindashboard({ user, apiBase, onLogout }) {
                 apiBase={apiBase}
                 onUnreadCountChange={setUnreadCount}
               />
+            ) : activeModule === "module-profile" ? (
+              <ProfilePanel apiBase={apiBase} />
             ) : (
               <div className="placeholder">
                 <p>Module is coming next.</p>
