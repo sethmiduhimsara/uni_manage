@@ -18,7 +18,9 @@ function prettyStatus(status) {
 }
 
 function statusClass(status) {
-  return `tm-status tm-status-${String(status || "OPEN").toLowerCase().replaceAll("_", "-")}`;
+  return `tm-status tm-status-${String(status || "OPEN")
+    .toLowerCase()
+    .replaceAll("_", "-")}`;
 }
 
 function priorityClass(priority) {
@@ -49,7 +51,9 @@ function TicketManager({ apiBase }) {
     const inProgress = tickets.filter(
       (ticket) => ticket.status === "IN_PROGRESS",
     ).length;
-    const unassigned = tickets.filter((ticket) => !ticket.assignedToEmail).length;
+    const unassigned = tickets.filter(
+      (ticket) => !ticket.assignedToEmail,
+    ).length;
     return {
       total: tickets.length,
       open,
@@ -334,22 +338,40 @@ function TicketManager({ apiBase }) {
                           className="ticket-action-btn ticket-action-assign"
                           type="button"
                           onClick={() => openAction(ticket.id, "assign")}
+                          aria-label="Assign technician"
+                          title="Assign technician"
                         >
-                          Assign
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M15 8a3 3 0 1 1-6 0a3 3 0 0 1 6 0Z" />
+                            <path d="M12 13c-2.67 0-8 1.34-8 4v1h11v-1c0-2.66-5.33-4-8-4Z" />
+                            <path d="M19 8v2h2v2h-2v2h-2v-2h-2v-2h2V8h2Z" />
+                          </svg>
+                          <span className="sr-only">Assign</span>
                         </button>
                         <button
                           className="ticket-action-btn ticket-action-update"
                           type="button"
                           onClick={() => openAction(ticket.id, "status")}
+                          aria-label="Update status"
+                          title="Update status"
                         >
-                          Update status
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 4a8 8 0 0 0-7.73 6h2.09A6 6 0 1 1 6 12H3l3.5 3.5L10 12H7a5 5 0 1 0 5-5Z" />
+                          </svg>
+                          <span className="sr-only">Update status</span>
                         </button>
                         <button
                           className="ticket-action-btn ticket-action-delete"
                           type="button"
                           onClick={() => deleteTicket(ticket.id)}
+                          aria-label="Delete ticket"
+                          title="Delete ticket"
                         >
-                          Delete
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M9 3h6l1 2h4v2H4V5h4l1-2Z" />
+                            <path d="M7 9h10l-1 11H8L7 9Z" />
+                          </svg>
+                          <span className="sr-only">Delete</span>
                         </button>
                       </div>
                     </td>
