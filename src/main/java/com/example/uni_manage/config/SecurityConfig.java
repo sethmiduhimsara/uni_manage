@@ -59,6 +59,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/tickets/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/notifications/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/notifications/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/profile").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/profile").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/resources/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/api/resources/**").hasRole("ADMIN")
                 .anyRequest().authenticated()

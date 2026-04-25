@@ -4,6 +4,7 @@ import MyBookings from "../Module_B/MyBookings";
 import TicketRequest from "../Module_C/TicketRequest";
 import MyTickets from "../Module_C/MyTickets";
 import NotificationPanel from "../Module_D/NotificationPanel";
+import ProfilePanel from "../Profile/ProfilePanel";
 import UserResourceView from "../Module_A/UserResourceView";
 import "./user-dashboard.css";
 
@@ -38,6 +39,11 @@ const TABS = [
     label: "Notifications",
     description: "Stay updated with booking, ticket, and system alerts.",
   },
+  {
+    id: "profile",
+    label: "Profile",
+    description: "Update your personal details and contact info.",
+  },
 ];
 
 const KPI_BY_TAB = {
@@ -70,6 +76,11 @@ const KPI_BY_TAB = {
     { label: "Unread alerts", value: "4" },
     { label: "System notices", value: "2" },
     { label: "Ticket updates", value: "3" },
+  ],
+  profile: [
+    { label: "Profile status", value: "Active" },
+    { label: "Last update", value: "Today" },
+    { label: "Visibility", value: "Private" },
   ],
 };
 
@@ -232,11 +243,13 @@ function UserDashboard({ user, apiBase, onLogout }) {
               <TicketRequest apiBase={apiBase} />
             ) : activeTab === "my-tickets" ? (
               <MyTickets apiBase={apiBase} />
-            ) : (
+            ) : activeTab === "notifications" ? (
               <NotificationPanel
                 apiBase={apiBase}
                 onUnreadCountChange={setUnreadCount}
               />
+            ) : (
+              <ProfilePanel apiBase={apiBase} />
             )}
           </div>
         </main>

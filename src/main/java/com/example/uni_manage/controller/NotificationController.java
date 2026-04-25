@@ -1,6 +1,7 @@
 package com.example.uni_manage.controller;
 
 import com.example.uni_manage.model.Notification;
+import com.example.uni_manage.model.NotificationType;
 import com.example.uni_manage.service.NotificationService;
 import com.example.uni_manage.exception.ForbiddenOperationException;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,23 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.markAllAsRead(getEmail(user)));
     }
 
+        @PostMapping
+        public ResponseEntity<Notification> createNotification(
+            @RequestBody NotificationCreateRequest request,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal OAuth2User user
+        ) {
+        NotificationType type = request.type() == null
+            ? NotificationType.TICKET_STATUS_CHANGED
+            : request.type();
+        return ResponseEntity.ok(notificationService.createNotification(
+            getEmail(user),
+            type,
+            request.title(),
+            request.message(),
+            request.referenceId()
+        ));
+        }
+
     @DeleteMapping
     public ResponseEntity<Long> clearAll(
             @org.springframework.security.core.annotation.AuthenticationPrincipal OAuth2User user
@@ -62,5 +80,13 @@ public class NotificationController {
             throw new ForbiddenOperationException("Email claim not available");
         }
         return email.toString();
+    }
+
+    public record NotificationCreateRequest(
+            NotificationType type,
+            String title,
+            String message,
+            String referenceId
+    ) {
     }
 }
